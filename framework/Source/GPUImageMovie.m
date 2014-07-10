@@ -220,6 +220,11 @@
 {
     reader = [self createAssetReader];
 
+    if (_videoLoadCompletion) {
+        _videoLoadCompletion();
+        _videoLoadCompletion = nil;
+    }
+
     AVAssetReaderOutput *readerVideoTrackOutput = nil;
     AVAssetReaderOutput *readerAudioTrackOutput = nil;
 
