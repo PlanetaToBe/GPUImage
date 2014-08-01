@@ -1,9 +1,29 @@
 #import "GPUImagePicture.h"
 
+@interface GPUImagePicture()
+{
+
+}
+
+@end
+
 @implementation GPUImagePicture
 
 #pragma mark -
 #pragma mark Initialization and teardown
+
+- (id)init
+{
+    if (!(self = [super init]))
+    {
+        return nil;
+    }
+
+    hasProcessedImage = NO;
+    imageUpdateSemaphore = dispatch_semaphore_create(0);
+
+    return self;
+}
 
 - (id)initWithURL:(NSURL *)url;
 {
@@ -55,16 +75,21 @@
 
 - (id)initWithCGImage:(CGImageRef)newImageSource smoothlyScaleOutput:(BOOL)smoothlyScaleOutput;
 {
-    if (!(self = [super init]))
+    if (!(self = [self init]))
     {
 		return nil;
     }
-    
-    hasProcessedImage = NO;
-    self.shouldSmoothlyScaleOutput = smoothlyScaleOutput;
-    imageUpdateSemaphore = dispatch_semaphore_create(0);
-    dispatch_semaphore_signal(imageUpdateSemaphore);
 
+    self.shouldSmoothlyScaleOutput = smoothlyScaleOutput;
+
+    [self updateImage:newImageSource];
+
+    return self;
+}
+
+- (void)updateImage:(CGImageRef)newImageSource
+{
+    dispatch_semaphore_signal(imageUpdateSemaphore);
 
     // TODO: Dispatch this whole thing asynchronously to move image loading off main thread
     CGFloat widthOfImage = CGImageGetWidth(newImageSource);
@@ -211,8 +236,6 @@
             CFRelease(dataFromImageDataProvider);
         }
     }
-    
-    return self;
 }
 
 // ARC forbids explicit message send of 'release'; since iOS 6 even for dispatch_release() calls: stripping it out in that case is required.
