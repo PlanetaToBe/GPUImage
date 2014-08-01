@@ -20,6 +20,7 @@
 // Image rendering
 - (void)processImage;
 - (CGSize)outputImageSize;
+- (void)updateImage:(CGImageRef)newImageSource;
 
 /**
  * Process image with all targets and filters asynchronously
