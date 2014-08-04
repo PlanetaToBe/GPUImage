@@ -81,6 +81,17 @@ NSString *const kGPUImageTwoInputTextureVertexShaderString = SHADER_STRING
     secondFrameCheckDisabled = YES;
 }
 
+- (void)enableFirstFrameCheck;
+{
+    firstFrameCheckDisabled = NO;
+}
+
+- (void)enableSecondFrameCheck;
+{
+    secondFrameCheckDisabled = NO;
+}
+
+
 #pragma mark -
 #pragma mark Rendering
 
@@ -154,7 +165,11 @@ NSString *const kGPUImageTwoInputTextureVertexShaderString = SHADER_STRING
     else
     {
         secondInputFramebuffer = newInputFramebuffer;
-        [secondInputFramebuffer lock];
+        if (secondFrameCheckDisabled) {
+            [secondInputFramebuffer disableReferenceCounting];
+        }else{
+            [secondInputFramebuffer lock];
+        }
     }
 }
 
