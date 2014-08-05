@@ -151,6 +151,11 @@
     movieWriter.encodingLiveVideo = NO;
 }
 
+- (void)disableSynchronizedEncoding
+{
+    synchronizedMovieWriter = nil;
+}
+
 - (void)startProcessing
 {
     if( self.playerItem ) {
