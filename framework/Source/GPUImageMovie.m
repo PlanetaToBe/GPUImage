@@ -150,11 +150,6 @@
     if (audio_queue != nil){
         dispatch_release(audio_queue);
     }
-
-    if ([GPUImageContext supportsFastTextureUpload])
-    {
-        CFRelease(coreVideoTextureCache);
-    }
 }
 
 #pragma mark -
@@ -227,7 +222,7 @@
     NSArray *audioTracks = [self.asset tracksWithMediaType:AVMediaTypeAudio];
     BOOL hasAudioTraks = [audioTracks count] > 0;
     BOOL shouldPlayAudio = hasAudioTraks && self.playSound;
-    BOOL shouldRecordAudioTrack = (hasAudioTraks && (weakSelf.audioEncodingTarget != nil));
+    BOOL shouldRecordAudioTrack = (hasAudioTraks && (self.audioEncodingTarget != nil));
 
     if (shouldRecordAudioTrack || shouldPlayAudio){
         audioEncodingIsFinished = NO;
@@ -278,6 +273,11 @@
     AVAssetReaderOutput *readerVideoTrackOutput = nil;
     AVAssetReaderOutput *readerAudioTrackOutput = nil;
 
+    NSArray *audioTracks = [self.asset tracksWithMediaType:AVMediaTypeAudio];
+    BOOL hasAudioTraks = [audioTracks count] > 0;
+    BOOL shouldPlayAudio = hasAudioTraks && self.playSound;
+    BOOL shouldRecordAudioTrack = (hasAudioTraks && (self.audioEncodingTarget != nil));
+
     audioEncodingIsFinished = YES;
     for( AVAssetReaderOutput *output in reader.outputs ) {
         if( [output.mediaType isEqualToString:AVMediaTypeAudio] ) {
@@ -301,14 +301,16 @@
     {
         [synchronizedMovieWriter setVideoInputReadyCallback:^{
             if (!weakSelf.paused) {
-                [weakSelf readNextVideoFrameFromOutput:readerVideoTrackOutput];
+                return [weakSelf readNextVideoFrameFromOutput:readerVideoTrackOutput];
             }
+            return NO;
         }];
 
         [synchronizedMovieWriter setAudioInputReadyCallback:^{
             if (!weakSelf.paused) {
-                [weakSelf readNextAudioSampleFromOutput:readerAudioTrackOutput];
+                return [weakSelf readNextAudioSampleFromOutput:readerAudioTrackOutput];
             }
+            return NO;
         }];
 
         [synchronizedMovieWriter enableSynchronizationCallbacks];
@@ -476,9 +478,9 @@
     return NO;
 }
 
-- (void)readNextAudioSampleFromOutput:(AVAssetReaderTrackOutput *)readerAudioTrackOutput {
+- (BOOL)readNextAudioSampleFromOutput:(AVAssetReaderTrackOutput *)readerAudioTrackOutput {
     if (audioEncodingIsFinished && !self.playSound) {
-        return;
+        return NO;
     }
 
     if (reader.status == AVAssetReaderStatusReading) {
