@@ -160,7 +160,7 @@
     
     CGPoint locationToPickFrom = CGPointZero;
     locationToPickFrom.x = MIN(MAX(locationInImage.x, 0.0), (imageSize.width - 1.0));
-    locationToPickFrom.y = MIN(MAX((imageSize.height - locationInImage.y), 0.0), (imageSize.height - 1.0));
+    locationToPickFrom.y = MIN(MAX(locationInImage.y, 0.0), (imageSize.height - 1.0));
     
     if (outputBGRA)    
     {
