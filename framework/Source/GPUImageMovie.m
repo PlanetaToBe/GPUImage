@@ -437,27 +437,17 @@
                     renderVideoFrame = NO;
                 }
             }
-// <<<<<<< HEAD
-//             __unsafe_unretained GPUImageMovie *weakSelf = self;
-//             runSynchronouslyOnVideoProcessingQueue(^{
-//                 [weakSelf processMovieFrame:sampleBufferRef];
-//                 CMSampleBufferInvalidate(sampleBufferRef);
-//                 CFRelease(sampleBufferRef);
-//             });
+            if (!renderVideoFrame)
+                return NO;
 
-//             return YES;
-// =======
+             __unsafe_unretained GPUImageMovie *weakSelf = self;
+             runSynchronouslyOnVideoProcessingQueue(^{
+                 [weakSelf processMovieFrame:sampleBufferRef];
+                 CMSampleBufferInvalidate(sampleBufferRef);
+                 CFRelease(sampleBufferRef);
+             });
 
-            if (renderVideoFrame){
-                __unsafe_unretained GPUImageMovie *weakSelf = self;
-//                runSynchronouslyOnVideoProcessingQueue(^{
-                    [weakSelf processMovieFrame:sampleBufferRef];
-//                });
-            }
-
-            CMSampleBufferInvalidate(sampleBufferRef);
-            CFRelease(sampleBufferRef);
-// >>>>>>> pheed-audio
+             return YES;
         }
         else
         {
