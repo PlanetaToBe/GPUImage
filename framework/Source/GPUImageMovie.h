@@ -35,6 +35,19 @@
  */
 @property(readonly, nonatomic) float progress;
 
+/** This determines whether audio should be played. Cann't be set to work with video writing. Defaults to NO.
+ */
+@property(readwrite, nonatomic) BOOL playSound;
+
+/** This determines whether alwaysCopiesSampleData will be set on the AVAssetReaderTrackOutput (provide better performance for lower end devices). Defaults to YES.
+ */
+@property(readwrite, nonatomic) BOOL alwaysCopiesSampleData;
+
+/** This enables to pause the movie while writing it or playing it without sound. (e.i. cann't be set to work with playSound=YES)
+ */
+@property(readwrite, nonatomic) BOOL paused;
+
+
 /** This is used to send the delete Movie did complete playing alert
  */
 @property (readwrite, nonatomic, assign) id <GPUImageMovieDelegate>delegate;
@@ -60,6 +73,6 @@
 - (void)startProcessing;
 - (void)endProcessing;
 - (void)cancelProcessing;
-- (void)processMovieFrame:(CMSampleBufferRef)movieSampleBuffer; 
+- (void)processMovieFrame:(CMSampleBufferRef)movieSampleBuffer;
 
 @end
