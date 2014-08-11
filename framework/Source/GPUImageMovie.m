@@ -324,16 +324,14 @@
                 if (!weakSelf.paused) {
                     [weakSelf readNextVideoFrameFromOutput:readerVideoTrackOutput];
                 }
-
-                if (shouldPlayAudio && (!audioEncodingIsFinished)){
+                if (shouldRecordAudioTrack && (!audioEncodingIsFinished)) {
+                    if (!weakSelf.paused) {
+                        [weakSelf readNextAudioSampleFromOutput:readerAudioTrackOutput];
+                    }
+                } else if (shouldPlayAudio && (!audioEncodingIsFinished)){
                     // todo: pause audio according to pause the property
                     if (audioPlayer.readyForMoreBytes) {
                         //process next audio sample if the player is ready to receive it
-                        [weakSelf readNextAudioSampleFromOutput:readerAudioTrackOutput];
-                    }
-
-                } else if (shouldRecordAudioTrack && (!audioEncodingIsFinished)) {
-                    if (!weakSelf.paused) {
                         [weakSelf readNextAudioSampleFromOutput:readerAudioTrackOutput];
                     }
                 }
@@ -477,21 +475,19 @@
         CMSampleBufferRef audioSampleBufferRef = [readerAudioTrackOutput copyNextSampleBuffer];
 
         if (audioSampleBufferRef) {
-
-            if (self.playSound){
+            if (self.audioEncodingTarget != nil && !audioEncodingIsFinished){
+                NSLog(@"recording audio buffer");
+                [self.audioEncodingTarget processAudioBuffer:audioSampleBufferRef];
+            }
+            else if (self.playSound){
                 CFRetain(audioSampleBufferRef);
                 dispatch_async(audio_queue, ^{
                     [audioPlayer copyBuffer:audioSampleBufferRef];
-
-                    CMSampleBufferInvalidate(audioSampleBufferRef);
                     CFRelease(audioSampleBufferRef);
                 });
-
-            } else if (self.audioEncodingTarget != nil && !audioEncodingIsFinished){
-                [self.audioEncodingTarget processAudioBuffer:audioSampleBufferRef];
-                CMSampleBufferInvalidate(audioSampleBufferRef);
             }
 
+//            CMSampleBufferInvalidate(audioSampleBufferRef);
             CFRelease(audioSampleBufferRef);
         } else {
             audioEncodingIsFinished = YES;
