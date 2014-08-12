@@ -320,7 +320,7 @@
         assetStartTime = 0.0;
         while (reader.status == AVAssetReaderStatusReading && (!_shouldRepeat || keepLooping))
         {
-            runSynchronouslyOnVideoProcessingQueue(^{
+//            runSynchronouslyOnVideoProcessingQueue(^{
                 if (!weakSelf.paused) {
                     [weakSelf readNextVideoFrameFromOutput:readerVideoTrackOutput];
                 }
@@ -335,7 +335,7 @@
                         [weakSelf readNextAudioSampleFromOutput:readerAudioTrackOutput];
                     }
                 }
-            });
+//            });
         }
 
         if (reader.status == AVAssetWriterStatusCompleted) {
@@ -476,7 +476,6 @@
 
         if (audioSampleBufferRef) {
             if (self.audioEncodingTarget != nil && !audioEncodingIsFinished){
-                NSLog(@"recording audio buffer");
                 [self.audioEncodingTarget processAudioBuffer:audioSampleBufferRef];
             }
             else if (self.playSound){
