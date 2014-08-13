@@ -229,14 +229,18 @@
         audioEncodingIsFinished = NO;
 
         // This might need to be extended to handle movies with more than one audio track
-//        audioReadSettings = [NSDictionary dictionaryWithObjectsAndKeys:
-//                                           [NSNumber numberWithInt:kAudioFormatLinearPCM], AVFormatIDKey,
-//                                           [NSNumber numberWithFloat:44100.0], AVSampleRateKey,
-//                                           [NSNumber numberWithInt:16], AVLinearPCMBitDepthKey,
-//                                           [NSNumber numberWithBool:NO], AVLinearPCMIsNonInterleaved,
-//                                           [NSNumber numberWithBool:NO], AVLinearPCMIsFloatKey,
-//                                           [NSNumber numberWithBool:NO], AVLinearPCMIsBigEndianKey,
-//                                           nil];
+        audioReadSettings = [NSDictionary dictionaryWithObjectsAndKeys:
+                                           [NSNumber numberWithInt:kAudioFormatLinearPCM], AVFormatIDKey,
+                                           [NSNumber numberWithFloat:44100.0], AVSampleRateKey,
+                                           [NSNumber numberWithInt:16], AVLinearPCMBitDepthKey,
+                                           [NSNumber numberWithBool:NO], AVLinearPCMIsNonInterleaved,
+                                           [NSNumber numberWithBool:NO], AVLinearPCMIsFloatKey,
+                                           [NSNumber numberWithBool:NO], AVLinearPCMIsBigEndianKey,
+                                           nil];
+
+        if (shouldRecordAudioTrack) {
+            audioReadSettings = nil;
+        }
 
         AVAssetTrack* audioTrack = [audioTracks objectAtIndex:0];
         readerAudioTrackOutput = [AVAssetReaderTrackOutput assetReaderTrackOutputWithTrack:audioTrack outputSettings:audioReadSettings];
