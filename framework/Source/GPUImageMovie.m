@@ -416,7 +416,7 @@
         CMSampleBufferRef audioSampleBufferRef = [readerAudioTrackOutput copyNextSampleBuffer];
         if (audioSampleBufferRef)
         {
-            //NSLog(@"read an audio frame: %@", CFBridgingRelease(CMTimeCopyDescription(kCFAllocatorDefault, CMSampleBufferGetOutputPresentationTimeStamp(audioSampleBufferRef))));
+//            NSLog(@"read an audio frame: %@", CFBridgingRelease(CMTimeCopyDescription(kCFAllocatorDefault, CMSampleBufferGetOutputPresentationTimeStamp(audioSampleBufferRef))));
             [self.audioEncodingTarget processAudioBuffer:audioSampleBufferRef];
             CFRelease(audioSampleBufferRef);
             return YES;
@@ -448,6 +448,8 @@
     
     CMTime currentSampleTime = CMSampleBufferGetOutputPresentationTimeStamp(movieSampleBuffer);
     CVImageBufferRef movieFrame = CMSampleBufferGetImageBuffer(movieSampleBuffer);
+
+//    NSLog(@"process movie frame at time %@",CFBridgingRelease(CMTimeCopyDescription(kCFAllocatorDefault, currentSampleTime)));
 
     processingFrameTime = currentSampleTime;
     [self processMovieFrame:movieFrame withSampleTime:currentSampleTime];
