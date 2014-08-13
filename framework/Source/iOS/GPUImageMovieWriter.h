@@ -55,6 +55,8 @@ extern NSString *const kGPUImageColorSwizzlingFragmentShaderString;
 
 - (void)setHasAudioTrack:(BOOL)hasAudioTrack audioSettings:(NSDictionary *)audioOutputSettings;
 
+- (BOOL)readyForMoreAudioData;
+
 // Movie recording
 - (void)startRecording;
 - (void)startRecordingInOrientation:(CGAffineTransform)orientationTransform;

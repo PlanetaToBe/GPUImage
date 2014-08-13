@@ -426,10 +426,13 @@ NSString *const kGPUImageColorSwizzlingFragmentShaderString = SHADER_STRING
             }
             else if(assetWriter.status == AVAssetWriterStatusWriting)
             {
-                if (![assetWriterAudioInput appendSampleBuffer:audioBuffer])
-                    NSLog(@"Problem appending audio buffer at time: %@", CFBridgingRelease(CMTimeCopyDescription(kCFAllocatorDefault, currentSampleTime)));
-                else
+                if (![assetWriterAudioInput appendSampleBuffer:audioBuffer]) {
+                    NSLog(@"Problem appending audio buffer at time: %@ with error %@",
+                          CFBridgingRelease(CMTimeCopyDescription(kCFAllocatorDefault, currentSampleTime)),
+                          [assetWriter.error description]);
+                } else {
                     NSLog(@"Movie writer appended audio sample at time: %@", CFBridgingRelease(CMTimeCopyDescription(kCFAllocatorDefault, currentSampleTime)));
+                }
             }
             else
             {
@@ -892,7 +895,7 @@ NSString *const kGPUImageColorSwizzlingFragmentShaderString = SHADER_STRING
                                    [ NSData dataWithBytes: &acl length: sizeof( acl ) ], AVChannelLayoutKey,
                                    nil];*/
         }
-        
+
         assetWriterAudioInput = [AVAssetWriterInput assetWriterInputWithMediaType:AVMediaTypeAudio outputSettings:audioOutputSettings];
         [assetWriter addInput:assetWriterAudioInput];
         assetWriterAudioInput.expectsMediaDataInRealTime = _encodingLiveVideo;
@@ -931,6 +934,10 @@ NSString *const kGPUImageColorSwizzlingFragmentShaderString = SHADER_STRING
 
 - (AVAssetWriter*)assetWriter {
     return assetWriter;
+}
+
+- (BOOL)readyForMoreAudioData {
+    return assetWriterAudioInput.readyForMoreMediaData;
 }
 
 @end

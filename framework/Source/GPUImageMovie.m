@@ -224,28 +224,30 @@
     BOOL shouldPlayAudio = hasAudioTraks && self.playSound;
     BOOL shouldRecordAudioTrack = (hasAudioTraks && (self.audioEncodingTarget != nil));
 
+    NSDictionary *audioReadSettings;
     if (shouldRecordAudioTrack || shouldPlayAudio){
         audioEncodingIsFinished = NO;
 
         // This might need to be extended to handle movies with more than one audio track
-        AVAssetTrack* audioTrack = [audioTracks objectAtIndex:0];
-        NSDictionary *audioReadSettings = [NSDictionary dictionaryWithObjectsAndKeys:
-                                           [NSNumber numberWithInt:kAudioFormatLinearPCM], AVFormatIDKey,
-                                           [NSNumber numberWithFloat:44100.0], AVSampleRateKey,
-                                           [NSNumber numberWithInt:16], AVLinearPCMBitDepthKey,
-                                           [NSNumber numberWithBool:NO], AVLinearPCMIsNonInterleaved,
-                                           [NSNumber numberWithBool:NO], AVLinearPCMIsFloatKey,
-                                           [NSNumber numberWithBool:NO], AVLinearPCMIsBigEndianKey,
-                                           nil];
+//        audioReadSettings = [NSDictionary dictionaryWithObjectsAndKeys:
+//                                           [NSNumber numberWithInt:kAudioFormatLinearPCM], AVFormatIDKey,
+//                                           [NSNumber numberWithFloat:44100.0], AVSampleRateKey,
+//                                           [NSNumber numberWithInt:16], AVLinearPCMBitDepthKey,
+//                                           [NSNumber numberWithBool:NO], AVLinearPCMIsNonInterleaved,
+//                                           [NSNumber numberWithBool:NO], AVLinearPCMIsFloatKey,
+//                                           [NSNumber numberWithBool:NO], AVLinearPCMIsBigEndianKey,
+//                                           nil];
 
+        AVAssetTrack* audioTrack = [audioTracks objectAtIndex:0];
         readerAudioTrackOutput = [AVAssetReaderTrackOutput assetReaderTrackOutputWithTrack:audioTrack outputSettings:audioReadSettings];
+        readerAudioTrackOutput.alwaysCopiesSampleData = NO;
         [assetReader addOutput:readerAudioTrackOutput];
 
-        if (shouldPlayAudio){
-            if (audio_queue == nil){
-                audio_queue = dispatch_queue_create("GPUAudioQueue", nil);
-            }
+        if (audio_queue == nil){
+            audio_queue = dispatch_queue_create("GPUAudioQueue", nil);
+        }
 
+        if (shouldPlayAudio){
             if (audioPlayer == nil){
                 audioPlayer = [[GPUImageAudioPlayer alloc] init];
                 [audioPlayer initAudio];
@@ -323,18 +325,21 @@
 //            runSynchronouslyOnVideoProcessingQueue(^{
                 if (!weakSelf.paused) {
                     [weakSelf readNextVideoFrameFromOutput:readerVideoTrackOutput];
-                }
-                if (shouldRecordAudioTrack && (!audioEncodingIsFinished)) {
-                    if (!weakSelf.paused) {
-                        [weakSelf readNextAudioSampleFromOutput:readerAudioTrackOutput];
+
+                    if (shouldRecordAudioTrack && (!audioEncodingIsFinished)) {
+                        if ([self.audioEncodingTarget readyForMoreAudioData]) {
+                            [weakSelf readNextAudioSampleFromOutput:readerAudioTrackOutput];
+                        }
                     }
-                } else if (shouldPlayAudio && (!audioEncodingIsFinished)){
-                    // todo: pause audio according to pause the property
-                    if (audioPlayer.readyForMoreBytes) {
-                        //process next audio sample if the player is ready to receive it
-                        [weakSelf readNextAudioSampleFromOutput:readerAudioTrackOutput];
+                    else if (shouldPlayAudio && (!audioEncodingIsFinished)){
+                        // todo: pause audio according to pause the property
+                        if (audioPlayer.readyForMoreBytes) {
+                            //process next audio sample if the player is ready to receive it
+                            [weakSelf readNextAudioSampleFromOutput:readerAudioTrackOutput];
+                        }
                     }
                 }
+
 //            });
         }
 
@@ -475,19 +480,19 @@
         CMSampleBufferRef audioSampleBufferRef = [readerAudioTrackOutput copyNextSampleBuffer];
 
         if (audioSampleBufferRef) {
+
             if (self.audioEncodingTarget != nil && !audioEncodingIsFinished){
                 [self.audioEncodingTarget processAudioBuffer:audioSampleBufferRef];
             }
             else if (self.playSound){
                 CFRetain(audioSampleBufferRef);
-                dispatch_async(audio_queue, ^{
+                dispatch_sync(audio_queue, ^{
                     [audioPlayer copyBuffer:audioSampleBufferRef];
                     CFRelease(audioSampleBufferRef);
                 });
             }
-
-//            CMSampleBufferInvalidate(audioSampleBufferRef);
             CFRelease(audioSampleBufferRef);
+//            CMSampleBufferInvalidate(audioSampleBufferRef);
         } else {
             audioEncodingIsFinished = YES;
         }
