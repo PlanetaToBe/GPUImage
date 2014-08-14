@@ -325,6 +325,7 @@ NSString *const kGPUImageColorSwizzlingFragmentShaderString = SHADER_STRING
             [assetWriterAudioInput markAsFinished];
         }
 
+        NSLog(@"finished recording at %@", getCMTimeString(lastAppendedFrameTime));
         [assetWriter endSessionAtSourceTime:lastAppendedFrameTime];
 
 #if (!defined(__IPHONE_6_0) || (__IPHONE_OS_VERSION_MAX_ALLOWED < __IPHONE_6_0))
@@ -358,7 +359,6 @@ NSString *const kGPUImageColorSwizzlingFragmentShaderString = SHADER_STRING
         return;
     }
     
-//    if (_hasAudioTrack && CMTIME_IS_VALID(startTime))
     if (_hasAudioTrack)
     {
         CFRetain(audioBuffer);

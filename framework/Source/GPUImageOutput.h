@@ -23,6 +23,7 @@ void runAsynchronouslyOnVideoProcessingQueue(void (^block)(void));
 void runSynchronouslyOnContextQueue(GPUImageContext *context, void (^block)(void));
 void runAsynchronouslyOnContextQueue(GPUImageContext *context, void (^block)(void));
 void reportAvailableMemoryForGPUImage(NSString *tag);
+id getCMTimeString(CMTime timestamp);
 
 @class GPUImageMovieWriter;
 

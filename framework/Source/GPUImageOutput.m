@@ -104,6 +104,11 @@ void reportAvailableMemoryForGPUImage(NSString *tag)
     }    
 }
 
+id getCMTimeString(CMTime timestamp)
+{
+    return CFBridgingRelease(CMTimeCopyDescription(kCFAllocatorDefault, timestamp));
+}
+
 @implementation GPUImageOutput
 
 @synthesize shouldSmoothlyScaleOutput = _shouldSmoothlyScaleOutput;
