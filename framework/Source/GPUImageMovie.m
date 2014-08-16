@@ -220,7 +220,6 @@
     readerVideoTrackOutput.alwaysCopiesSampleData = self.alwaysCopiesSampleData;
     [assetReader addOutput:readerVideoTrackOutput];
 
-    AVAssetReaderTrackOutput *readerAudioTrackOutput = nil;
     NSArray *audioTracks = [self.asset tracksWithMediaType:AVMediaTypeAudio];
     BOOL hasAudioTraks = [audioTracks count] > 0;
     BOOL shouldPlayAudio = hasAudioTraks && self.playSound;
@@ -228,7 +227,7 @@
 
     audioEncodingIsFinished = NO;
 
-    if (shouldPlayAudio){
+    if (shouldPlayAudio || shouldRecordAudioTrack){
         // This might need to be extended to handle movies with more than one audio track
         NSDictionary *audioReadSettings = [NSDictionary dictionaryWithObjectsAndKeys:
                                            [NSNumber numberWithInt:kAudioFormatLinearPCM], AVFormatIDKey,
@@ -243,26 +242,19 @@
         readerPlaybackAudioTrackOutput = [AVAssetReaderTrackOutput assetReaderTrackOutputWithTrack:audioTrack outputSettings:audioReadSettings];
         [assetReader addOutput:readerPlaybackAudioTrackOutput];
 
-        if (audio_queue == nil){
-            audio_queue = dispatch_queue_create("GPUAudioQueue", nil);
+        if (shouldPlayAudio) {
+            if (audio_queue == nil){
+                audio_queue = dispatch_queue_create("GPUAudioQueue", nil);
+            }
+
+            if (audioPlayer == nil){
+                audioPlayer = [[GPUImageAudioPlayer alloc] init];
+                [audioPlayer initAudio];
+                [audioPlayer startPlaying];
+            }
         }
 
-        if (audioPlayer == nil){
-            audioPlayer = [[GPUImageAudioPlayer alloc] init];
-            [audioPlayer initAudio];
-            [audioPlayer startPlaying];
-        }
     }
-
-    if (shouldRecordAudioTrack) {
-        [self.audioEncodingTarget setShouldInvalidateAudioSampleWhenDone:YES];
-
-        AVAssetTrack* audioTrack = [audioTracks objectAtIndex:0];
-        readerAudioTrackOutput = [AVAssetReaderTrackOutput assetReaderTrackOutputWithTrack:audioTrack outputSettings:nil];
-        readerAudioTrackOutput.alwaysCopiesSampleData = NO;
-        [assetReader addOutput:readerAudioTrackOutput];
-    }
-
     return assetReader;
 }
 
@@ -283,7 +275,8 @@
     BOOL shouldPlayAudio = hasAudioTraks && self.playSound;
     BOOL shouldRecordAudioTrack = (hasAudioTraks && (self.audioEncodingTarget != nil));
 
-    audioEncodingIsFinished = YES;
+    audioEncodingIsFinished = !(readerPlaybackAudioTrackOutput!=nil);
+
     for( AVAssetReaderOutput *output in reader.outputs ) {
         if( [output.mediaType isEqualToString:AVMediaTypeAudio] ) {
             audioEncodingIsFinished = NO;
@@ -325,26 +318,15 @@
         assetStartTime = 0.0;
         while (reader.status == AVAssetReaderStatusReading && (!_shouldRepeat || keepLooping))
         {
-//            runSynchronouslyOnVideoProcessingQueue(^{
-                if (!weakSelf.paused) {
-                    [weakSelf readNextVideoFrameFromOutput:readerVideoTrackOutput];
+            if (!weakSelf.paused) {
+//                runSynchronouslyOnVideoProcessingQueue(^{
+                [weakSelf readNextVideoFrameFromOutput:readerVideoTrackOutput];
+//                });
 
-                    if (shouldRecordAudioTrack && (!audioEncodingIsFinished)) {
-                        if ([self.audioEncodingTarget readyForMoreAudioData]) {
-                            [weakSelf readNextAudioSampleFromOutput:readerAudioTrackOutput];
-                        }
-                    }
-
-                    if (shouldPlayAudio && (!audioEncodingIsFinished)){
-                        // todo: pause audio according to pause the property
-                        if (audioPlayer.readyForMoreBytes) {
-                            //process next audio sample if the player is ready to receive it
-                            [weakSelf readNextAudioSampleFromOutput:readerPlaybackAudioTrackOutput];
-                        }
-                    }
+                if ((shouldPlayAudio || shouldRecordAudioTrack) && (!audioEncodingIsFinished)) {
+                    [weakSelf readNextAudioSampleFromOutput:readerAudioTrackOutput];
                 }
-
-//            });
+            }
         }
 
         if (reader.status == AVAssetWriterStatusCompleted) {
@@ -444,17 +426,18 @@
                     renderVideoFrame = NO;
                 }
             }
-            if (!renderVideoFrame)
-                return NO;
 
-             __unsafe_unretained GPUImageMovie *weakSelf = self;
-             runSynchronouslyOnVideoProcessingQueue(^{
-                 [weakSelf processMovieFrame:sampleBufferRef];
-                 CMSampleBufferInvalidate(sampleBufferRef);
-                 CFRelease(sampleBufferRef);
-             });
+            __unsafe_unretained GPUImageMovie *weakSelf = self;
+            runSynchronouslyOnVideoProcessingQueue(^{
+                if (renderVideoFrame) {
+                    [weakSelf processMovieFrame:sampleBufferRef];
+                }
 
-             return YES;
+                CMSampleBufferInvalidate(sampleBufferRef);
+                CFRelease(sampleBufferRef);
+            });
+
+            return renderVideoFrame;
         }
         else
         {
@@ -475,10 +458,14 @@
     return NO;
 }
 
-- (BOOL)readNextAudioSampleFromOutput:(AVAssetReaderTrackOutput *)readerAudioTrackOutput {
-    if (audioEncodingIsFinished) {
+- (BOOL)readNextAudioSampleFromOutput:(AVAssetReaderTrackOutput *)readerAudioTrackOutput
+{
+
+    if (audioPlayer && !audioPlayer.readyForMoreBytes)
         return NO;
-    }
+
+    if (self.audioEncodingTarget && ![self.audioEncodingTarget readyForMoreAudioData])
+        return NO;
 
     if (reader.status == AVAssetReaderStatusReading) {
         CMSampleBufferRef audioSampleBufferRef = [readerAudioTrackOutput copyNextSampleBuffer];
@@ -490,9 +477,9 @@
                     [audioPlayer copyBuffer:audioSampleBufferRef];
                     CFRelease(audioSampleBufferRef);
                 });
-            }
-            else if (self.audioEncodingTarget) {
-                [self.audioEncodingTarget processAudioBuffer:audioSampleBufferRef];
+                if (self.audioEncodingTarget) {
+                    [self.audioEncodingTarget processAudioBuffer:audioSampleBufferRef];
+                }
             }
 
             CFRelease(audioSampleBufferRef);
@@ -501,7 +488,7 @@
             audioEncodingIsFinished = YES;
         }
     }
-    return NO;
+    return YES;
 }
 
 - (void)processMovieFrame:(CMSampleBufferRef)movieSampleBuffer;
