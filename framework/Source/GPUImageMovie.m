@@ -170,6 +170,9 @@
 
 - (void)startProcessing
 {
+    if (reader.status == AVAssetReaderStatusReading) {
+        return;
+    }
     if( self.playerItem ) {
         [self processPlayerItem];
         return;
@@ -275,7 +278,7 @@
     BOOL shouldPlayAudio = hasAudioTraks && self.playSound;
     BOOL shouldRecordAudioTrack = (hasAudioTraks && (self.audioEncodingTarget != nil));
 
-    audioEncodingIsFinished = !(readerPlaybackAudioTrackOutput!=nil);
+    audioEncodingIsFinished = YES;
 
     for( AVAssetReaderOutput *output in reader.outputs ) {
         if( [output.mediaType isEqualToString:AVMediaTypeAudio] ) {
@@ -289,7 +292,7 @@
 
     if ([reader startReading] == NO)
     {
-            NSLog(@"Error reading from file at URL: %@", self.url);
+        NSLog(@"Error reading from file at URL: %@", self.url);
         return;
     }
 
@@ -319,9 +322,7 @@
         while (reader.status == AVAssetReaderStatusReading && (!_shouldRepeat || keepLooping))
         {
             if (!weakSelf.paused) {
-//                runSynchronouslyOnVideoProcessingQueue(^{
                 [weakSelf readNextVideoFrameFromOutput:readerVideoTrackOutput];
-//                });
 
                 if ((shouldPlayAudio || shouldRecordAudioTrack) && (!audioEncodingIsFinished)) {
                     [weakSelf readNextAudioSampleFromOutput:readerAudioTrackOutput];
@@ -336,7 +337,7 @@
             if (keepLooping) {
                 reader = nil;
                 dispatch_async(dispatch_get_main_queue(), ^{
-                    [self startProcessing];
+                    [weakSelf startProcessing];
                 });
             } else {
                 [weakSelf endProcessing];
