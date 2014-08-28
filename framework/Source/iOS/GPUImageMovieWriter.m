@@ -365,16 +365,21 @@ NSString *const kGPUImageColorSwizzlingFragmentShaderString = SHADER_STRING
         return;
     }
 
-    if (CMTIME_IS_INVALID(startTime))
-    {
-        return;
-    }
-
     if (_hasAudioTrack)
     {
         CFRetain(audioBuffer);
 
         CMTime currentSampleTime = CMSampleBufferGetOutputPresentationTimeStamp(audioBuffer);
+
+        if (CMTIME_IS_INVALID(startTime))
+        {
+            if (audioInputReadyCallback == NULL)
+            {
+                [assetWriter startWriting];
+            }
+            [assetWriter startSessionAtSourceTime:currentSampleTime];
+            startTime = currentSampleTime;
+        }
 
         if (!assetWriterAudioInput.readyForMoreMediaData && _encodingLiveVideo)
         {
@@ -438,7 +443,7 @@ NSString *const kGPUImageColorSwizzlingFragmentShaderString = SHADER_STRING
             }
             CFRelease(audioBuffer);
         };
-//        runAsynchronouslyOnContextQueue(_movieWriterContext, write);
+
         if( _encodingLiveVideo )
         {
             runAsynchronouslyOnContextQueue(_movieWriterContext, write);
