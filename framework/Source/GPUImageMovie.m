@@ -364,9 +364,13 @@
         }
         playerItemOutput = [[AVPlayerItemVideoOutput alloc] initWithPixelBufferAttributes:pixBuffAttributes];
         [playerItemOutput setDelegate:self queue:videoProcessingQueue];
-
         [_playerItem addOutput:playerItemOutput];
         [playerItemOutput requestNotificationOfMediaDataChangeWithAdvanceInterval:0.1];
+
+        if (_videoLoadCompletion) {
+            _videoLoadCompletion();
+            _videoLoadCompletion = nil;
+        }
     });
 }
 

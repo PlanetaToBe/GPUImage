@@ -46,6 +46,7 @@ extern NSString *const kGPUImageColorSwizzlingFragmentShaderString;
 @property(nonatomic) BOOL enabled;
 @property(nonatomic, readonly) AVAssetWriter *assetWriter;
 @property(nonatomic, readonly) CMTime duration;
+@property(nonatomic, readonly) CMTime startTimestamp;
 @property(nonatomic, assign) CGAffineTransform transform;
 @property(nonatomic, copy) NSArray *metaData;
 @property(nonatomic, assign, getter = isPaused) BOOL paused;
