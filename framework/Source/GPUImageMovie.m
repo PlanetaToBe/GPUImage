@@ -322,6 +322,12 @@
 
         [_playerItem addOutput:playerItemOutput];
         [playerItemOutput requestNotificationOfMediaDataChangeWithAdvanceInterval:0.1];
+
+        if (_videoLoadCompletion) {
+            _videoLoadCompletion();
+            _videoLoadCompletion = nil;
+        }
+
     });
 }
 
