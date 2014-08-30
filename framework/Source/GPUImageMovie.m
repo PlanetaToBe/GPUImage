@@ -594,7 +594,7 @@
             {
                 NSInteger indexOfObject = [targets indexOfObject:currentTarget];
                 NSInteger targetTextureIndex = [[targetTextureIndices objectAtIndex:indexOfObject] integerValue];
-                [currentTarget newFrameReadyAtTime:currentSampleTime atIndex:targetTextureIndex];
+                [currentTarget newFrameReadyAtTime:kCMTimeIndefinite atIndex:targetTextureIndex];
             }
 
             CVPixelBufferUnlockBaseAddress(movieFrame, 0);
