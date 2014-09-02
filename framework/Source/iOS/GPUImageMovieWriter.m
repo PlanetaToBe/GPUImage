@@ -426,8 +426,8 @@ NSString *const kGPUImageColorSwizzlingFragmentShaderString = SHADER_STRING
             {
                 if (![assetWriterAudioInput appendSampleBuffer:audioBuffer])
                     NSLog(@"Problem appending audio buffer at time: %@", CFBridgingRelease(CMTimeCopyDescription(kCFAllocatorDefault, currentSampleTime)));
-                else
-                    NSLog(@"Append audio sample at time: %@", CFBridgingRelease(CMTimeCopyDescription(kCFAllocatorDefault, currentSampleTime)));
+//                else
+//                    NSLog(@"Append audio sample at time: %@", CFBridgingRelease(CMTimeCopyDescription(kCFAllocatorDefault, currentSampleTime)));
             }
             else
             {
@@ -738,9 +738,9 @@ NSString *const kGPUImageColorSwizzlingFragmentShaderString = SHADER_STRING
                 if (![assetWriterPixelBufferInput appendPixelBuffer:pixel_buffer withPresentationTime:frameTime]) {
                     NSLog(@"Problem appending pixel buffer at time: %@", CFBridgingRelease(CMTimeCopyDescription(kCFAllocatorDefault, frameTime)));
                 }
-                else {
-                    NSLog(@"Append pixel buffer at time: %@", CFBridgingRelease(CMTimeCopyDescription(kCFAllocatorDefault, frameTime)));
-                }
+//                else {
+//                    NSLog(@"Append pixel buffer at time: %@", CFBridgingRelease(CMTimeCopyDescription(kCFAllocatorDefault, frameTime)));
+//                }
             }
             else
             {
@@ -807,6 +807,11 @@ NSString *const kGPUImageColorSwizzlingFragmentShaderString = SHADER_STRING
             [_delegate movieRecordingCompleted];
         }
     }
+}
+
+- (BOOL)isStarted
+{
+    return !CMTIME_IS_INVALID(startTime);
 }
 
 - (BOOL)shouldIgnoreUpdatesToThisTarget;
