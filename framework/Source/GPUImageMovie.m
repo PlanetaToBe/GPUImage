@@ -158,7 +158,7 @@
 
 - (void)startProcessing
 {
-    if( self.playerItem ) {
+    if(self.playerItem) {
         [self processPlayerItem];
         return;
     }
@@ -305,6 +305,9 @@
 - (void)processPlayerItem
 {
     runSynchronouslyOnVideoProcessingQueue(^{
+        if (displayLink)
+            return;
+
         displayLink = [CADisplayLink displayLinkWithTarget:self selector:@selector(displayLinkCallback:)];
         [displayLink addToRunLoop:[NSRunLoop currentRunLoop] forMode:NSDefaultRunLoopMode];
         [displayLink setPaused:YES];
