@@ -334,6 +334,20 @@
     });
 }
 
+- (void)pauseProcessing
+{
+    if (displayLink) {
+        [displayLink setPaused:YES];
+    }
+}
+
+- (void)resumeProcessing
+{
+    if (displayLink) {
+        [displayLink setPaused:NO];
+    }
+}
+
 - (void)outputMediaDataWillChange:(AVPlayerItemOutput *)sender
 {
 	// Restart display link.
