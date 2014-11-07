@@ -14,4 +14,6 @@
     GPUImagePicture *lookupImageSource;
 }
 
+- (id)initWithImageSource:(UIImage *)imageSource;
+
 @end
