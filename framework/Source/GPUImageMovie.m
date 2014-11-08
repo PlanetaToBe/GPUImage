@@ -305,26 +305,28 @@
 - (void)processPlayerItem
 {
     runSynchronouslyOnVideoProcessingQueue(^{
-        if (displayLink)
-            return;
-
-        displayLink = [CADisplayLink displayLinkWithTarget:self selector:@selector(displayLinkCallback:)];
-        [displayLink addToRunLoop:[NSRunLoop currentRunLoop] forMode:NSDefaultRunLoopMode];
-        [displayLink setPaused:YES];
-
-        dispatch_queue_t videoProcessingQueue = [GPUImageContext sharedContextQueue];
-        NSMutableDictionary *pixBuffAttributes = [NSMutableDictionary dictionary];
-        if ([GPUImageContext supportsFastTextureUpload]) {
-            [pixBuffAttributes setObject:@(kCVPixelFormatType_420YpCbCr8BiPlanarFullRange) forKey:(id)kCVPixelBufferPixelFormatTypeKey];
+        if (displayLink) {
+            [self resumeProcessing];
         }
-        else {
-            [pixBuffAttributes setObject:@(kCVPixelFormatType_32BGRA) forKey:(id)kCVPixelBufferPixelFormatTypeKey];
-        }
-        playerItemOutput = [[AVPlayerItemVideoOutput alloc] initWithPixelBufferAttributes:pixBuffAttributes];
-        [playerItemOutput setDelegate:self queue:videoProcessingQueue];
+        else{
+            displayLink = [CADisplayLink displayLinkWithTarget:self selector:@selector(displayLinkCallback:)];
+            [displayLink addToRunLoop:[NSRunLoop currentRunLoop] forMode:NSDefaultRunLoopMode];
+            [displayLink setPaused:YES];
 
-        [_playerItem addOutput:playerItemOutput];
-        [playerItemOutput requestNotificationOfMediaDataChangeWithAdvanceInterval:0.1];
+            dispatch_queue_t videoProcessingQueue = [GPUImageContext sharedContextQueue];
+            NSMutableDictionary *pixBuffAttributes = [NSMutableDictionary dictionary];
+            if ([GPUImageContext supportsFastTextureUpload]) {
+                [pixBuffAttributes setObject:@(kCVPixelFormatType_420YpCbCr8BiPlanarFullRange) forKey:(id)kCVPixelBufferPixelFormatTypeKey];
+            }
+            else {
+                [pixBuffAttributes setObject:@(kCVPixelFormatType_32BGRA) forKey:(id)kCVPixelBufferPixelFormatTypeKey];
+            }
+            playerItemOutput = [[AVPlayerItemVideoOutput alloc] initWithPixelBufferAttributes:pixBuffAttributes];
+            [playerItemOutput setDelegate:self queue:videoProcessingQueue];
+
+            [_playerItem addOutput:playerItemOutput];
+            [playerItemOutput requestNotificationOfMediaDataChangeWithAdvanceInterval:0.1];
+        }
 
         if (_videoLoadCompletion) {
             dispatch_async(dispatch_get_main_queue() ,_videoLoadCompletion);
