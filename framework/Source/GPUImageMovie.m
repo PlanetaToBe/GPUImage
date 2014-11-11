@@ -466,7 +466,7 @@
     return NO;
 }
 
-- (void)processMovieFrame:(CMSampleBufferRef)movieSampleBuffer; 
+- (void)processMovieFrame:(CMSampleBufferRef)movieSampleBuffer
 {
 //    CMTimeGetSeconds
 //    CMTimeSubtract
