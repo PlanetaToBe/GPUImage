@@ -151,4 +151,6 @@ extern NSString *const kGPUImageYUVVideoRangeConversionForLAFragmentShaderString
 + (BOOL)isBackFacingCameraPresent;
 + (BOOL)isFrontFacingCameraPresent;
 
+- (CGSize)imageBufferSize;
+
 @end

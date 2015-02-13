@@ -107,9 +107,9 @@ NSString *const kGPUImageYUVVideoRangeConversionForLAFragmentShaderString = SHAD
     const GLfloat *_preferredConversion;
     
     BOOL isFullYUVRange;
-    
+
     int imageBufferWidth, imageBufferHeight;
-    
+
     BOOL addedAudioInputsDueToEncodingTarget;
 }
 
@@ -1124,6 +1124,11 @@ NSString *const kGPUImageYUVVideoRangeConversionForLAFragmentShaderString = SHAD
 {
     _horizontallyMirrorRearFacingCamera = newValue;
     [self updateOrientationSendToTargets];
+}
+
+- (CGSize)imageBufferSize
+{
+    return CGSizeMake((CGFloat)imageBufferWidth, (CGFloat)imageBufferHeight);
 }
 
 @end
