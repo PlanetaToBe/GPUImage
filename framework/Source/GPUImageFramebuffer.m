@@ -302,7 +302,8 @@ void dataProviderUnlockCallback (void *info, const void *data, size_t size)
     GPUImageFramebuffer *framebuffer = (__bridge_transfer GPUImageFramebuffer*)info;
     
     [framebuffer restoreRenderTarget];
-    [framebuffer unlock];
+    if (framebuffer->framebufferReferenceCount > 0)
+        [framebuffer unlock];
     [[GPUImageContext sharedFramebufferCache] removeFramebufferFromActiveImageCaptureList:framebuffer];
 }
 
