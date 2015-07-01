@@ -730,6 +730,11 @@
         [self.delegate didCompletePlayingMovie];
     }
     self.delegate = nil;
+
+    if (playerItemOutput) {
+        [playerItemOutput setDelegate:nil queue:nil];
+        playerItemOutput = nil;
+    }
 }
 
 - (void)cancelProcessing
