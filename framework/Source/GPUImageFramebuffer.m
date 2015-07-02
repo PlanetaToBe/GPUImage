@@ -289,6 +289,11 @@ void dataProviderUnlockCallback (void *info, const void *data, size_t size);
     referenceCountingDisabled = NO;
 }
 
+- (int)referenceCount
+{
+    return (int)framebufferReferenceCount;
+}
+
 #pragma mark -
 #pragma mark Image capture
 
@@ -345,7 +350,7 @@ void dataProviderUnlockCallback (void *info, const void *data, size_t size)
             rawImagePixels = (GLubyte *)malloc(totalBytesForImage);
             glReadPixels(0, 0, (int)_size.width, (int)_size.height, GL_RGBA, GL_UNSIGNED_BYTE, rawImagePixels);
             dataProvider = CGDataProviderCreateWithData(NULL, rawImagePixels, totalBytesForImage, dataProviderReleaseCallback);
-            [self unlock]; // Don't need to keep this around anymore
+//            [self unlock]; // Don't need to keep this around anymore
         }
         
         CGColorSpaceRef defaultRGBColorSpace = CGColorSpaceCreateDeviceRGB();
