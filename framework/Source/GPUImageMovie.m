@@ -531,6 +531,8 @@
 
     // Fix issue 1580
     [GPUImageContext useImageProcessingContext];
+
+
     
     if ([GPUImageContext supportsFastTextureUpload])
     {
@@ -607,7 +609,7 @@
             {
                 NSInteger indexOfObject = [targets indexOfObject:currentTarget];
                 NSInteger targetTextureIndex = [[targetTextureIndices objectAtIndex:indexOfObject] integerValue];
-                [currentTarget newFrameReadyAtTime:kCMTimeIndefinite atIndex:targetTextureIndex];
+                [currentTarget newFrameReadyAtTime:currentSampleTime atIndex:targetTextureIndex];
             }
 
             CVPixelBufferUnlockBaseAddress(movieFrame, 0);
