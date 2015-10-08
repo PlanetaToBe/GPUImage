@@ -1,3 +1,4 @@
+
 #import "GPUImageOutput.h"
 #import "GPUImageMovieWriter.h"
 #import "GPUImagePicture.h"
@@ -181,6 +182,7 @@ void reportAvailableMemoryForGPUImage(NSString *tag)
 	return [NSArray arrayWithArray:targets];
 }
 
+
 - (void)addTarget:(id<GPUImageInput>)newTarget;
 {
     NSInteger nextAvailableTextureIndex = [newTarget nextAvailableTextureIndex];
@@ -194,6 +196,7 @@ void reportAvailableMemoryForGPUImage(NSString *tag)
 
 - (void)addTarget:(id<GPUImageInput>)newTarget atTextureLocation:(NSInteger)textureLocation;
 {
+    
     if([targets containsObject:newTarget])
     {
         return;
@@ -276,6 +279,11 @@ void reportAvailableMemoryForGPUImage(NSString *tag)
 }
 
 - (CGImageRef)newCGImageFromCurrentlyProcessedOutput;
+{
+    return nil;
+}
+
+- (CGImageRef)newCGImageFromCurrentlyProcessedOutputNoSemaphore
 {
     return nil;
 }
@@ -394,5 +402,34 @@ void reportAvailableMemoryForGPUImage(NSString *tag)
         _audioEncodingTarget.hasAudioTrack = YES;
     }
 }
+
+- (long)dispatchSemaphore:(dispatch_semaphore_t)semaphore dispatch:(SemaphoreDispatchType)dispatchType dispathTimeout:(dispatch_time_t)timeout
+{
+    if(dispatchType == SemaphoreSignal)
+    {
+//        NSLog(@"dispatchSemaphore %@ Signal",semaphore);
+    
+        return dispatch_semaphore_signal(semaphore);
+        
+    }else if(dispatchType == SemaphoreWait)
+    {
+        if(timeout != 0)
+        {
+//            NSLog(@"dispatchSemaphore %@ Wait %llu",semaphore, timeout);
+            
+            return dispatch_semaphore_wait(semaphore, timeout);
+            
+        }else{
+//            NSLog(@"dispatchSemaphore %@ Wait %llu",semaphore, DISPATCH_TIME_NOW);
+            
+            return dispatch_semaphore_wait(semaphore, DISPATCH_TIME_NOW);
+            
+        }
+    }else{
+        return 0;
+    }
+    
+}
+
 
 @end

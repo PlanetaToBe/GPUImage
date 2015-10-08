@@ -17,6 +17,13 @@ typedef NS_ENUM(NSInteger, UIImageOrientation) {
 };
 #endif
 
+
+typedef enum{
+    SemaphoreWait,
+    SemaphoreSignal
+    
+} SemaphoreDispatchType;
+
 void runOnMainQueueWithoutDeadlocking(void (^block)(void));
 void runSynchronouslyOnVideoProcessingQueue(void (^block)(void));
 void runAsynchronouslyOnVideoProcessingQueue(void (^block)(void));
@@ -106,6 +113,7 @@ void reportAvailableMemoryForGPUImage(NSString *tag);
 
 - (void)useNextFrameForImageCapture;
 - (CGImageRef)newCGImageFromCurrentlyProcessedOutput;
+- (CGImageRef)newCGImageFromCurrentlyProcessedOutputNoSemaphore;
 - (CGImageRef)newCGImageByFilteringCGImage:(CGImageRef)imageToFilter;
 
 // Platform-specific image output methods
@@ -123,5 +131,7 @@ void reportAvailableMemoryForGPUImage(NSString *tag);
 #endif
 
 - (BOOL)providesMonochromeOutput;
+
+- (long)dispatchSemaphore:(dispatch_semaphore_t)semaphore dispatch:(SemaphoreDispatchType)dispatchType dispathTimeout:(dispatch_time_t)timeout;
 
 @end

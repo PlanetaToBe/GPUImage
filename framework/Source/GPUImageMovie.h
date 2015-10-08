@@ -16,8 +16,8 @@
 
 @property (readwrite, retain) AVAsset *asset;
 @property (readwrite, retain) AVPlayerItem *playerItem;
-@property(readwrite, retain) NSURL *url;
-
+@property (readwrite, retain) NSURL *url;
+@property (atomic)bool resetingPlayerItemOutput;
 /** This enables the benchmarking mode, which logs out instantaneous and average frame times to the console
  */
 @property(readwrite, nonatomic) BOOL runBenchmark;
@@ -63,5 +63,6 @@
 - (void)endProcessing;
 - (void)cancelProcessing;
 - (void)processMovieFrame:(CMSampleBufferRef)movieSampleBuffer; 
+- (void)setNewPlayerItem:(AVPlayerItem *)plyrItm;
 
 @end

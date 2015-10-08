@@ -270,8 +270,7 @@
 {
     hasProcessedImage = YES;
     
-    //    dispatch_semaphore_wait(imageUpdateSemaphore, DISPATCH_TIME_FOREVER);
-    
+
     if (dispatch_semaphore_wait(imageUpdateSemaphore, DISPATCH_TIME_NOW) != 0)
     {
         return NO;

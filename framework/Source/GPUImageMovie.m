@@ -3,6 +3,7 @@
 #import "GPUImageFilter.h"
 #import "GPUImageVideoCamera.h"
 
+
 @interface GPUImageMovie () <AVPlayerItemOutputPullDelegate>
 {
     BOOL audioEncodingIsFinished, videoEncodingIsFinished;
@@ -25,6 +26,7 @@
     BOOL isFullYUVRange;
 
     int imageBufferWidth, imageBufferHeight;
+    int hasNewPixelBufferFailedCount;
 }
 
 - (void)processAsset;
@@ -39,6 +41,7 @@
 @synthesize playAtActualSpeed = _playAtActualSpeed;
 @synthesize delegate = _delegate;
 @synthesize shouldRepeat = _shouldRepeat;
+@synthesize resetingPlayerItemOutput;
 
 #pragma mark -
 #pragma mark Initialization and teardown
@@ -54,7 +57,8 @@
 
     self.url = url;
     self.asset = nil;
-
+    hasNewPixelBufferFailedCount = 0;
+    resetingPlayerItemOutput = false;
     return self;
 }
 
@@ -80,6 +84,7 @@
         return nil;
     }
 
+    hasNewPixelBufferFailedCount = 0;
     [self yuvConversionSetup];
 
     self.url = nil;
@@ -159,11 +164,13 @@
 - (void)startProcessing
 {
     if(self.playerItem) {
+        
         [self processPlayerItem];
         return;
     }
     if(self.url == nil)
     {
+        
       [self processAsset];
       return;
     }
@@ -189,6 +196,7 @@
         [blockSelf processAsset];
         blockSelf = nil;
     }];
+    
 }
 
 - (AVAssetReader*)createAssetReader
@@ -304,8 +312,10 @@
 
 - (void)processPlayerItem
 {
+
     runSynchronouslyOnVideoProcessingQueue(^{
         if (displayLink) {
+
             [self resumeProcessing];
         }
         else{
@@ -326,8 +336,16 @@
 
             [_playerItem addOutput:playerItemOutput];
             [playerItemOutput requestNotificationOfMediaDataChangeWithAdvanceInterval:0.1];
+            NSLog(@"processPlayerItem complete");
         }
     });
+}
+
+- (void)setNewPlayerItem:(AVPlayerItem *)plyrItm
+{
+    self.playerItem = plyrItm;
+    [_playerItem addOutput:playerItemOutput];
+    
 }
 
 - (void)pauseProcessing
@@ -339,6 +357,7 @@
 
 - (void)resumeProcessing
 {
+    
     if (displayLink) {
         [displayLink setPaused:NO];
     }
@@ -352,6 +371,7 @@
 
 - (void)displayLinkCallback:(CADisplayLink *)sender
 {
+    
 	/*
 	 The callback gets called once every Vsync.
 	 Using the display link's timestamp and duration we can compute the next time the screen will be refreshed, and copy the pixel buffer for that time
@@ -359,18 +379,49 @@
 	 */
 	// Calculate the nextVsync time which is when the screen will be refreshed next.
 	CFTimeInterval nextVSync = ([sender timestamp] + [sender duration]);
-
+    
 	CMTime outputItemTime = [playerItemOutput itemTimeForHostTime:nextVSync];
 
 	if ([playerItemOutput hasNewPixelBufferForItemTime:outputItemTime]) {
         __unsafe_unretained GPUImageMovie *weakSelf = self;
 		CVPixelBufferRef pixelBuffer = [playerItemOutput copyPixelBufferForItemTime:outputItemTime itemTimeForDisplay:NULL];
+        hasNewPixelBufferFailedCount = 0;
         if( pixelBuffer )
             runSynchronouslyOnVideoProcessingQueue(^{
                 [weakSelf processMovieFrame:pixelBuffer withSampleTime:outputItemTime];
                 CFRelease(pixelBuffer);
             });
-	}
+    }else{
+        
+        hasNewPixelBufferFailedCount++;
+        //if playerItemOutput fails too many times it means the playerItemOutput has somehow been stuck
+        //hasNewPixelBufferFailedCount must be greater than 10 to avoid triggering recreating playerItemOutput in cases where the video has just reached the end of the composition. This number may vary based on device.
+        
+        if((hasNewPixelBufferFailedCount > 15) && (resetingPlayerItemOutput == false))
+        {
+            resetingPlayerItemOutput = true;
+            NSLog(@"hasNewPixelBufferFailed %d",hasNewPixelBufferFailedCount);
+            [_playerItem removeOutput:playerItemOutput];
+            
+            dispatch_queue_t videoProcessingQueue = [GPUImageContext sharedContextQueue];
+            NSMutableDictionary *pixBuffAttributes = [NSMutableDictionary dictionary];
+            if ([GPUImageContext supportsFastTextureUpload]) {
+                [pixBuffAttributes setObject:@(kCVPixelFormatType_420YpCbCr8BiPlanarFullRange) forKey:(id)kCVPixelBufferPixelFormatTypeKey];
+            }
+            else {
+                [pixBuffAttributes setObject:@(kCVPixelFormatType_32BGRA) forKey:(id)kCVPixelBufferPixelFormatTypeKey];
+            }
+            playerItemOutput = [[AVPlayerItemVideoOutput alloc] initWithPixelBufferAttributes:pixBuffAttributes];
+            [playerItemOutput setDelegate:self queue:videoProcessingQueue];
+            
+            [_playerItem addOutput:playerItemOutput];
+            [playerItemOutput requestNotificationOfMediaDataChangeWithAdvanceInterval:0.1];
+            
+            [_playerItem addOutput:playerItemOutput];
+            hasNewPixelBufferFailedCount = 0;
+            resetingPlayerItemOutput = false;
+        }
+    }
 }
 
 - (BOOL)readNextVideoFrameFromOutput:(AVAssetReaderOutput *)readerVideoTrackOutput;
@@ -380,7 +431,7 @@
         CMSampleBufferRef sampleBufferRef = [readerVideoTrackOutput copyNextSampleBuffer];
         if (sampleBufferRef) 
         {
-            //NSLog(@"read a video frame: %@", CFBridgingRelease(CMTimeCopyDescription(kCFAllocatorDefault, CMSampleBufferGetOutputPresentationTimeStamp(sampleBufferRef))));
+
             if (_playAtActualSpeed)
             {
                 // Do this outside of the video processing queue to not slow that down while waiting
@@ -492,6 +543,7 @@
 
 - (void)processMovieFrame:(CVPixelBufferRef)movieFrame withSampleTime:(CMTime)currentSampleTime
 {
+    
     int bufferHeight = (int) CVPixelBufferGetHeight(movieFrame);
     int bufferWidth = (int) CVPixelBufferGetWidth(movieFrame);
 
@@ -531,8 +583,6 @@
 
     // Fix issue 1580
     [GPUImageContext useImageProcessingContext];
-
-
     
     if ([GPUImageContext supportsFastTextureUpload])
     {
@@ -728,6 +778,7 @@
     self.delegate = nil;
 
     if (playerItemOutput) {
+        
         [playerItemOutput setDelegate:nil queue:nil];
         playerItemOutput = nil;
     }

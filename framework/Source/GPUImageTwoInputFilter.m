@@ -135,7 +135,7 @@ NSString *const kGPUImageTwoInputTextureVertexShaderString = SHADER_STRING
     [secondInputFramebuffer unlock];
     if (usingNextFrameForImageCapture)
     {
-        dispatch_semaphore_signal(imageCaptureSemaphore);
+        [self dispatchSemaphore:imageCaptureSemaphore dispatch:SemaphoreSignal dispathTimeout:0];
     }
 }
 

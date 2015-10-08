@@ -124,7 +124,8 @@ NSString *const kGPUImageThreeInputTextureVertexShaderString = SHADER_STRING
     [thirdInputFramebuffer unlock];
     if (usingNextFrameForImageCapture)
     {
-        dispatch_semaphore_signal(imageCaptureSemaphore);
+        [self dispatchSemaphore:imageCaptureSemaphore dispatch:SemaphoreSignal dispathTimeout:0];
+
     }
 }
 

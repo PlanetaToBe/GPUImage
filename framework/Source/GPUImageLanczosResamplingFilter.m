@@ -232,7 +232,8 @@ NSString *const kGPUImageLanczosFragmentShaderString = SHADER_STRING
     outputFramebuffer = nil;
     if (usingNextFrameForImageCapture)
     {
-        dispatch_semaphore_signal(imageCaptureSemaphore);
+        [self dispatchSemaphore:imageCaptureSemaphore dispatch:SemaphoreSignal dispathTimeout:0];
+
     }
 }
 

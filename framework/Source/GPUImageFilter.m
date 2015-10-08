@@ -71,7 +71,8 @@ NSString *const kGPUImagePassthroughFragmentShaderString = SHADER_STRING
     backgroundColorBlue = 0.0;
     backgroundColorAlpha = 0.0;
     imageCaptureSemaphore = dispatch_semaphore_create(0);
-    dispatch_semaphore_signal(imageCaptureSemaphore);
+    [self dispatchSemaphore:imageCaptureSemaphore dispatch:SemaphoreSignal dispathTimeout:0];
+
 
     runSynchronouslyOnVideoProcessingQueue(^{
         [GPUImageContext useImageProcessingContext];
@@ -172,7 +173,9 @@ NSString *const kGPUImagePassthroughFragmentShaderString = SHADER_STRING
     usingNextFrameForImageCapture = YES;
 
     // Set the semaphore high, if it isn't already
-    if (dispatch_semaphore_wait(imageCaptureSemaphore, DISPATCH_TIME_NOW) != 0)
+   
+    
+    if ([self dispatchSemaphore:imageCaptureSemaphore dispatch:SemaphoreWait dispathTimeout:DISPATCH_TIME_NOW] != 0)
     {
         return;
     }
@@ -180,23 +183,35 @@ NSString *const kGPUImagePassthroughFragmentShaderString = SHADER_STRING
 
 - (CGImageRef)newCGImageFromCurrentlyProcessedOutput
 {
+
     // Give it three seconds to process, then abort if they forgot to set up the image capture properly
     double timeoutForImageCapture = 3.0;
     dispatch_time_t convertedTimeout = dispatch_time(DISPATCH_TIME_NOW, timeoutForImageCapture * NSEC_PER_SEC);
 
-    if (dispatch_semaphore_wait(imageCaptureSemaphore, convertedTimeout) != 0)
+
+    if ([self dispatchSemaphore:imageCaptureSemaphore dispatch:SemaphoreWait dispathTimeout:convertedTimeout] != 0)
     {
         return NULL;
     }
 
     GPUImageFramebuffer* framebuffer = [self framebufferForOutput];
-    
     usingNextFrameForImageCapture = NO;
-    dispatch_semaphore_signal(imageCaptureSemaphore);
+    [self dispatchSemaphore:imageCaptureSemaphore dispatch:SemaphoreSignal dispathTimeout:0];
+    CGImageRef image = [framebuffer newCGImageFromFramebufferContents];
+    return image;
+}
+
+- (CGImageRef)newCGImageFromCurrentlyProcessedOutputNoSemaphore
+{
+
+    GPUImageFramebuffer* framebuffer = [self framebufferForOutput];
+    usingNextFrameForImageCapture = NO;
+    [self dispatchSemaphore:imageCaptureSemaphore dispatch:SemaphoreSignal dispathTimeout:0];
     
     CGImageRef image = [framebuffer newCGImageFromFramebufferContents];
     return image;
 }
+
 
 #pragma mark -
 #pragma mark Managing the display FBOs
@@ -324,7 +339,8 @@ NSString *const kGPUImagePassthroughFragmentShaderString = SHADER_STRING
     
     if (usingNextFrameForImageCapture)
     {
-        dispatch_semaphore_signal(imageCaptureSemaphore);
+        [self dispatchSemaphore:imageCaptureSemaphore dispatch:SemaphoreSignal dispathTimeout:0];
+
     }
 }
 
@@ -745,6 +761,8 @@ NSString *const kGPUImagePassthroughFragmentShaderString = SHADER_STRING
 {
     return NO;
 }
+
+
 
 #pragma mark -
 #pragma mark Accessors
