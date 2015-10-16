@@ -97,8 +97,9 @@
 
     // If passed an empty image reference, CGContextDrawImage will fail in future versions of the SDK.
     NSAssert( widthOfImage > 0 && heightOfImage > 0, @"Passed image must not be empty - it should be at least 1px tall and wide");
-    
+
     pixelSizeOfImage = CGSizeMake(widthOfImage, heightOfImage);
+
     CGSize pixelSizeToUseForTexture = pixelSizeOfImage;
     
     BOOL shouldRedrawUsingCoreGraphics = NO;
@@ -167,9 +168,12 @@
     }
     
     //    CFAbsoluteTime elapsedTime, startTime = CFAbsoluteTimeGetCurrent();
-    
+
     if (shouldRedrawUsingCoreGraphics)
     {
+        
+        
+        
         // For resized or incompatible image: redraw
         imageData = (GLubyte *) calloc(1, (int)pixelSizeToUseForTexture.width * (int)pixelSizeToUseForTexture.height * 4);
         

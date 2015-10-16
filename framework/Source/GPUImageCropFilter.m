@@ -73,6 +73,8 @@ NSString *const kGPUImageCropFragmentShaderString =  SHADER_STRING
 
 - (void)setInputSize:(CGSize)newSize atIndex:(NSInteger)textureIndex;
 {
+    
+
     if (self.preventRendering)
     {
         return;
@@ -92,13 +94,13 @@ NSString *const kGPUImageCropFragmentShaderString =  SHADER_STRING
 //        }
 //    }
     
+    
     CGSize rotatedSize = [self rotatedSize:newSize forIndex:textureIndex];
     originallySuppliedInputSize = rotatedSize;
 
     CGSize scaledSize;
     scaledSize.width = rotatedSize.width * _cropRegion.size.width;
     scaledSize.height = rotatedSize.height * _cropRegion.size.height;
-
     
     if (CGSizeEqualToSize(scaledSize, CGSizeZero))
     {
@@ -108,6 +110,7 @@ NSString *const kGPUImageCropFragmentShaderString =  SHADER_STRING
     {
         inputTextureSize = scaledSize;
     }
+    
 }
 
 #pragma mark -

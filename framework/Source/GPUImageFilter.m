@@ -218,9 +218,11 @@ NSString *const kGPUImagePassthroughFragmentShaderString = SHADER_STRING
 
 - (CGSize)sizeOfFBO;
 {
+
     CGSize outputSize = [self maximumOutputSize];
     if ( (CGSizeEqualToSize(outputSize, CGSizeZero)) || (inputTextureSize.width < outputSize.width) )
     {
+
         return inputTextureSize;
     }
     else
@@ -660,6 +662,8 @@ NSString *const kGPUImagePassthroughFragmentShaderString = SHADER_STRING
 
 - (void)setInputSize:(CGSize)newSize atIndex:(NSInteger)textureIndex;
 {
+
+    
     if (self.preventRendering)
     {
         return;
@@ -691,6 +695,7 @@ NSString *const kGPUImagePassthroughFragmentShaderString = SHADER_STRING
     }
     
     [self setupFilterForSize:[self sizeOfFBO]];
+    
 }
 
 - (void)setInputRotation:(GPUImageRotationMode)newInputRotation atIndex:(NSInteger)textureIndex;
@@ -699,7 +704,8 @@ NSString *const kGPUImagePassthroughFragmentShaderString = SHADER_STRING
 }
 
 - (void)forceProcessingAtSize:(CGSize)frameSize;
-{    
+{
+    
     if (CGSizeEqualToSize(frameSize, CGSizeZero))
     {
         overrideInputSize = NO;
@@ -710,10 +716,12 @@ NSString *const kGPUImagePassthroughFragmentShaderString = SHADER_STRING
         inputTextureSize = frameSize;
         forcedMaximumSize = CGSizeZero;
     }
+    
 }
 
 - (void)forceProcessingAtSizeRespectingAspectRatio:(CGSize)frameSize;
 {
+
     if (CGSizeEqualToSize(frameSize, CGSizeZero))
     {
         overrideInputSize = NO;
@@ -725,6 +733,7 @@ NSString *const kGPUImagePassthroughFragmentShaderString = SHADER_STRING
         overrideInputSize = YES;
         forcedMaximumSize = frameSize;
     }
+    
 }
 
 - (CGSize)maximumOutputSize;

@@ -33,6 +33,8 @@ void dataProviderUnlockCallback (void *info, const void *data, size_t size);
 #pragma mark -
 #pragma mark Initialization and teardown
 
+
+
 - (id)initWithSize:(CGSize)framebufferSize textureOptions:(GPUTextureOptions)fboTextureOptions onlyTexture:(BOOL)onlyGenerateTexture;
 {
     if (!(self = [super init]))
@@ -42,6 +44,7 @@ void dataProviderUnlockCallback (void *info, const void *data, size_t size);
     
     _textureOptions = fboTextureOptions;
     _size = framebufferSize;
+    
     framebufferReferenceCount = 0;
     referenceCountingDisabled = NO;
     _missingFramebuffer = onlyGenerateTexture;
@@ -152,7 +155,8 @@ void dataProviderUnlockCallback (void *info, const void *data, size_t size);
             CVReturn err = CVPixelBufferCreate(kCFAllocatorDefault, (int)_size.width, (int)_size.height, kCVPixelFormatType_32BGRA, attrs, &renderTarget);
             if (err)
             {
-                NSLog(@"FBO size: %f, %f", _size.width, _size.height);
+//                NSLog(@"self %@",self);
+//                NSLog(@"FBO size: %f, %f", _size.width, _size.height);
                 NSAssert(NO, @"Error at CVPixelBufferCreate %d", err);
             }
             
