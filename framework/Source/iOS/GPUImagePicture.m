@@ -263,13 +263,13 @@
 
 - (void)processImage;
 {
+    
     [self processImageWithCompletionHandler:nil];
 }
 
 - (BOOL)processImageWithCompletionHandler:(void (^)(void))completion;
 {
     hasProcessedImage = YES;
-    
 
     if (dispatch_semaphore_wait(imageUpdateSemaphore, DISPATCH_TIME_NOW) != 0)
     {

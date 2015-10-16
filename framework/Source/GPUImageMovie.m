@@ -381,7 +381,7 @@
 	CFTimeInterval nextVSync = ([sender timestamp] + [sender duration]);
     
 	CMTime outputItemTime = [playerItemOutput itemTimeForHostTime:nextVSync];
-
+//    NSLog(@"displayLinkCallback");
 	if ([playerItemOutput hasNewPixelBufferForItemTime:outputItemTime]) {
         __unsafe_unretained GPUImageMovie *weakSelf = self;
 		CVPixelBufferRef pixelBuffer = [playerItemOutput copyPixelBufferForItemTime:outputItemTime itemTimeForDisplay:NULL];

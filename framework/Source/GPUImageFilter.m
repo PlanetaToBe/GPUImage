@@ -346,6 +346,7 @@ NSString *const kGPUImagePassthroughFragmentShaderString = SHADER_STRING
 
 - (void)informTargetsAboutNewFrameAtTime:(CMTime)frameTime;
 {
+    
     if (self.frameProcessingCompletionBlock != NULL)
     {
         self.frameProcessingCompletionBlock(self, frameTime);
@@ -363,6 +364,7 @@ NSString *const kGPUImagePassthroughFragmentShaderString = SHADER_STRING
             [currentTarget setInputSize:[self outputFrameSize] atIndex:textureIndex];
         }
     }
+
     
     // Release our hold so it can return to the cache immediately upon processing
     [[self framebufferForOutput] unlock];
@@ -375,7 +377,7 @@ NSString *const kGPUImagePassthroughFragmentShaderString = SHADER_STRING
     {
         [self removeOutputFramebuffer];
     }    
-    
+
     // Trigger processing last, so that our unlock comes first in serial execution, avoiding the need for a callback
     for (id<GPUImageInput> currentTarget in targets)
     {
@@ -383,9 +385,11 @@ NSString *const kGPUImagePassthroughFragmentShaderString = SHADER_STRING
         {
             NSInteger indexOfObject = [targets indexOfObject:currentTarget];
             NSInteger textureIndex = [[targetTextureIndices objectAtIndex:indexOfObject] integerValue];
+//            NSLog(@"informTargetsAboutNewFrameAtTime currentTarget %@",currentTarget);
             [currentTarget newFrameReadyAtTime:frameTime atIndex:textureIndex];
         }
     }
+//    NSLog(@"informTargetsAboutNewFrameAtTime end queue %@",dispatch_get_current_queue())';
 }
 
 - (CGSize)outputFrameSize;
