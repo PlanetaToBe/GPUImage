@@ -336,7 +336,6 @@
 
             [_playerItem addOutput:playerItemOutput];
             [playerItemOutput requestNotificationOfMediaDataChangeWithAdvanceInterval:0.1];
-            NSLog(@"processPlayerItem complete");
         }
     });
 }

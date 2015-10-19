@@ -449,10 +449,10 @@ void dataProviderUnlockCallback (void *info, const void *data, size_t size)
 #endif
 }
 
-- (GLuint)texture;
-{
-//    NSLog(@"Accessing texture: %d from FB: %@", _texture, self);
-    return _texture;
-}
+//- (GLuint)texture;
+//{
+////    NSLog(@"Accessing texture: %d from FB: %@", _texture, self);
+//    return _texture;
+//}
 
 @end
