@@ -378,18 +378,23 @@
 	 */
 	// Calculate the nextVsync time which is when the screen will be refreshed next.
 	CFTimeInterval nextVSync = ([sender timestamp] + [sender duration]);
-    
 	CMTime outputItemTime = [playerItemOutput itemTimeForHostTime:nextVSync];
-//    NSLog(@"displayLinkCallback");
-	if ([playerItemOutput hasNewPixelBufferForItemTime:outputItemTime]) {
+
+    bool hasitem = [playerItemOutput hasNewPixelBufferForItemTime:outputItemTime];
+
+    
+	if (hasitem) {
         __unsafe_unretained GPUImageMovie *weakSelf = self;
 		CVPixelBufferRef pixelBuffer = [playerItemOutput copyPixelBufferForItemTime:outputItemTime itemTimeForDisplay:NULL];
         hasNewPixelBufferFailedCount = 0;
         if( pixelBuffer )
+        {
+         
             runSynchronouslyOnVideoProcessingQueue(^{
                 [weakSelf processMovieFrame:pixelBuffer withSampleTime:outputItemTime];
                 CFRelease(pixelBuffer);
             });
+        }
     }else{
         
         hasNewPixelBufferFailedCount++;
@@ -399,7 +404,7 @@
         if((hasNewPixelBufferFailedCount > 15) && (resetingPlayerItemOutput == false))
         {
             resetingPlayerItemOutput = true;
-            NSLog(@"hasNewPixelBufferFailed %d",hasNewPixelBufferFailedCount);
+
             [_playerItem removeOutput:playerItemOutput];
             
             dispatch_queue_t videoProcessingQueue = [GPUImageContext sharedContextQueue];
@@ -577,6 +582,7 @@
         }
 
     }
+
     
     CFAbsoluteTime startTime = CFAbsoluteTimeGetCurrent();
 
@@ -585,6 +591,7 @@
     
     if ([GPUImageContext supportsFastTextureUpload])
     {
+        
         CVOpenGLESTextureRef luminanceTextureRef = NULL;
         CVOpenGLESTextureRef chrominanceTextureRef = NULL;
 
@@ -592,6 +599,7 @@
         if (CVPixelBufferGetPlaneCount(movieFrame) > 0) // Check for YUV planar inputs to do RGB conversion
         {
 
+            
             if ( (imageBufferWidth != bufferWidth) && (imageBufferHeight != bufferHeight) )
             {
                 imageBufferWidth = bufferWidth;
@@ -614,6 +622,7 @@
                 NSLog(@"Error at CVOpenGLESTextureCacheCreateTextureFromImage %d", err);
             }
 
+            
             luminanceTexture = CVOpenGLESTextureGetName(luminanceTextureRef);
             glBindTexture(GL_TEXTURE_2D, luminanceTexture);
             glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
@@ -633,7 +642,7 @@
             {
                 NSLog(@"Error at CVOpenGLESTextureCacheCreateTextureFromImage %d", err);
             }
-
+            
             chrominanceTexture = CVOpenGLESTextureGetName(chrominanceTextureRef);
             glBindTexture(GL_TEXTURE_2D, chrominanceTexture);
             glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
@@ -656,6 +665,7 @@
 
             for (id<GPUImageInput> currentTarget in targets)
             {
+
                 NSInteger indexOfObject = [targets indexOfObject:currentTarget];
                 NSInteger targetTextureIndex = [[targetTextureIndices objectAtIndex:indexOfObject] integerValue];
                 [currentTarget newFrameReadyAtTime:currentSampleTime atIndex:targetTextureIndex];
@@ -664,9 +674,11 @@
             CVPixelBufferUnlockBaseAddress(movieFrame, 0);
             CFRelease(luminanceTextureRef);
             CFRelease(chrominanceTextureRef);
+
         }
         else
         {
+            
             // TODO: Mesh this with the new framebuffer cache
 //            CVPixelBufferLockBaseAddress(movieFrame, 0);
 //
@@ -706,6 +718,8 @@
     }
     else
     {
+        
+        NSLog(@"processMovieFrame 3b");
         // Upload to texture
         CVPixelBufferLockBaseAddress(movieFrame, 0);
         
@@ -747,6 +761,7 @@
         CFAbsoluteTime currentFrameTime = (CFAbsoluteTimeGetCurrent() - startTime);
         NSLog(@"Current frame time : %f ms", 1000.0 * currentFrameTime);
     }
+    
 }
 
 - (void)endProcessing;

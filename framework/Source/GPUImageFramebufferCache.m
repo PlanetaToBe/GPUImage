@@ -69,20 +69,25 @@
 
 - (GPUImageFramebuffer *)fetchFramebufferForSize:(CGSize)framebufferSize textureOptions:(GPUTextureOptions)textureOptions onlyTexture:(BOOL)onlyTexture;
 {
+    
+
     __block GPUImageFramebuffer *framebufferFromCache = nil;
 //    dispatch_sync(framebufferCacheQueue, ^{
     runSynchronouslyOnVideoProcessingQueue(^{
+
         NSString *lookupHash = [self hashForSize:framebufferSize textureOptions:textureOptions onlyTexture:onlyTexture];
         NSNumber *numberOfMatchingTexturesInCache = [framebufferTypeCounts objectForKey:lookupHash];
         NSInteger numberOfMatchingTextures = [numberOfMatchingTexturesInCache integerValue];
-        
+
         if ([numberOfMatchingTexturesInCache integerValue] < 1)
         {
+            
             // Nothing in the cache, create a new framebuffer to use
             framebufferFromCache = [[GPUImageFramebuffer alloc] initWithSize:framebufferSize textureOptions:textureOptions onlyTexture:onlyTexture];
         }
         else
         {
+
             // Something found, pull the old framebuffer and decrement the count
             NSInteger currentTextureID = (numberOfMatchingTextures - 1);
             while ((framebufferFromCache == nil) && (currentTextureID >= 0))
@@ -99,16 +104,17 @@
             }
             
             currentTextureID++;
-            
+
             [framebufferTypeCounts setObject:[NSNumber numberWithInteger:currentTextureID] forKey:lookupHash];
             
             if (framebufferFromCache == nil)
             {
                 framebufferFromCache = [[GPUImageFramebuffer alloc] initWithSize:framebufferSize textureOptions:textureOptions onlyTexture:onlyTexture];
             }
+
         }
     });
-
+    
     [framebufferFromCache lock];
     return framebufferFromCache;
 }

@@ -97,23 +97,25 @@ NSString *const kGPUImageTwoInputTextureVertexShaderString = SHADER_STRING
 
 - (void)renderToTextureWithVertices:(const GLfloat *)vertices textureCoordinates:(const GLfloat *)textureCoordinates;
 {
+
     if (self.preventRendering)
     {
         [firstInputFramebuffer unlock];
         [secondInputFramebuffer unlock];
         return;
     }
-    
+
     [GPUImageContext setActiveShaderProgram:filterProgram];
     outputFramebuffer = [[GPUImageContext sharedFramebufferCache] fetchFramebufferForSize:[self sizeOfFBO] textureOptions:self.outputTextureOptions onlyTexture:NO];
+
     [outputFramebuffer activateFramebuffer];
+
     if (usingNextFrameForImageCapture)
     {
         [outputFramebuffer lock];
     }
 
     [self setUniformsForProgramAtIndex:0];
-        
     glClearColor(backgroundColorRed, backgroundColorGreen, backgroundColorBlue, backgroundColorAlpha);
     glClear(GL_COLOR_BUFFER_BIT);
     
@@ -130,13 +132,14 @@ NSString *const kGPUImageTwoInputTextureVertexShaderString = SHADER_STRING
     glVertexAttribPointer(filterSecondTextureCoordinateAttribute, 2, GL_FLOAT, 0, 0, [[self class] textureCoordinatesForRotation:inputRotation2]);
     
     glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
-
+    
     [firstInputFramebuffer unlock];
     [secondInputFramebuffer unlock];
     if (usingNextFrameForImageCapture)
     {
         [self dispatchSemaphore:imageCaptureSemaphore dispatch:SemaphoreSignal dispathTimeout:0];
     }
+
 }
 
 #pragma mark -
@@ -223,6 +226,7 @@ NSString *const kGPUImageTwoInputTextureVertexShaderString = SHADER_STRING
 
 - (void)newFrameReadyAtTime:(CMTime)frameTime atIndex:(NSInteger)textureIndex;
 {
+    
     // You can set up infinite update loops, so this helps to short circuit them
     if (hasReceivedFirstFrame && hasReceivedSecondFrame)
     {
@@ -265,15 +269,19 @@ NSString *const kGPUImageTwoInputTextureVertexShaderString = SHADER_STRING
             }
         }
     }
-
+    
     // || (hasReceivedFirstFrame && secondFrameCheckDisabled) || (hasReceivedSecondFrame && firstFrameCheckDisabled)
     if ((hasReceivedFirstFrame && hasReceivedSecondFrame) || updatedMovieFrameOppositeStillImage)
     {
+    
         CMTime passOnFrameTime = (!CMTIME_IS_INDEFINITE(firstFrameTime)) ? firstFrameTime : secondFrameTime;
         [super newFrameReadyAtTime:passOnFrameTime atIndex:0]; // Bugfix when trying to record: always use time from first input (unless indefinite, in which case use the second input)
+    
         hasReceivedFirstFrame = NO;
         hasReceivedSecondFrame = NO;
+    
     }
+    
 }
 
 @end

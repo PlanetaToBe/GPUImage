@@ -184,20 +184,24 @@ NSString *const kGPUImagePassthroughFragmentShaderString = SHADER_STRING
 - (CGImageRef)newCGImageFromCurrentlyProcessedOutput
 {
 
+    NSLog(@"newCGImageFromCurrentlyProcessedOutput 1");
     // Give it three seconds to process, then abort if they forgot to set up the image capture properly
     double timeoutForImageCapture = 3.0;
     dispatch_time_t convertedTimeout = dispatch_time(DISPATCH_TIME_NOW, timeoutForImageCapture * NSEC_PER_SEC);
 
 
+        NSLog(@"newCGImageFromCurrentlyProcessedOutput 2");
     if ([self dispatchSemaphore:imageCaptureSemaphore dispatch:SemaphoreWait dispathTimeout:convertedTimeout] != 0)
     {
         return NULL;
     }
 
+        NSLog(@"newCGImageFromCurrentlyProcessedOutput 3");
     GPUImageFramebuffer* framebuffer = [self framebufferForOutput];
     usingNextFrameForImageCapture = NO;
     [self dispatchSemaphore:imageCaptureSemaphore dispatch:SemaphoreSignal dispathTimeout:0];
     CGImageRef image = [framebuffer newCGImageFromFramebufferContents];
+        NSLog(@"newCGImageFromCurrentlyProcessedOutput 4");
     return image;
 }
 
@@ -348,7 +352,7 @@ NSString *const kGPUImagePassthroughFragmentShaderString = SHADER_STRING
 
 - (void)informTargetsAboutNewFrameAtTime:(CMTime)frameTime;
 {
-    
+
     if (self.frameProcessingCompletionBlock != NULL)
     {
         self.frameProcessingCompletionBlock(self, frameTime);
@@ -383,13 +387,15 @@ NSString *const kGPUImagePassthroughFragmentShaderString = SHADER_STRING
     // Trigger processing last, so that our unlock comes first in serial execution, avoiding the need for a callback
     for (id<GPUImageInput> currentTarget in targets)
     {
+
         if (currentTarget != self.targetToIgnoreForUpdates)
         {
             NSInteger indexOfObject = [targets indexOfObject:currentTarget];
             NSInteger textureIndex = [[targetTextureIndices objectAtIndex:indexOfObject] integerValue];
-//            NSLog(@"informTargetsAboutNewFrameAtTime currentTarget %@",currentTarget);
             [currentTarget newFrameReadyAtTime:frameTime atIndex:textureIndex];
+
         }
+
     }
 //    NSLog(@"informTargetsAboutNewFrameAtTime end queue %@",dispatch_get_current_queue())';
 }
@@ -578,6 +584,7 @@ NSString *const kGPUImagePassthroughFragmentShaderString = SHADER_STRING
 
 - (void)newFrameReadyAtTime:(CMTime)frameTime atIndex:(NSInteger)textureIndex;
 {
+
     static const GLfloat imageVertices[] = {
         -1.0f, -1.0f,
         1.0f, -1.0f,
@@ -585,9 +592,14 @@ NSString *const kGPUImagePassthroughFragmentShaderString = SHADER_STRING
         1.0f,  1.0f,
     };
     
-    [self renderToTextureWithVertices:imageVertices textureCoordinates:[[self class] textureCoordinatesForRotation:inputRotation]];
+    //somehow sometimes gettgina an fbo of zero here. doing this check to prevent crashes
+    if([self sizeOfFBO].width > 0 && [self sizeOfFBO].height > 0)
+    {
+        [self renderToTextureWithVertices:imageVertices textureCoordinates:[[self class] textureCoordinatesForRotation:inputRotation]];
 
-    [self informTargetsAboutNewFrameAtTime:frameTime];
+        [self informTargetsAboutNewFrameAtTime:frameTime];
+    }
+
 }
 
 - (NSInteger)nextAvailableTextureIndex;

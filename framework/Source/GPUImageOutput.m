@@ -404,6 +404,7 @@ void reportAvailableMemoryForGPUImage(NSString *tag)
 
 - (long)dispatchSemaphore:(dispatch_semaphore_t)semaphore dispatch:(SemaphoreDispatchType)dispatchType dispathTimeout:(dispatch_time_t)timeout
 {
+
     if(dispatchType == SemaphoreSignal)
     {
 //        NSLog(@"dispatchSemaphore %@ Signal",semaphore);
