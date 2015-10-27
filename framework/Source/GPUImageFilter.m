@@ -170,11 +170,10 @@ NSString *const kGPUImagePassthroughFragmentShaderString = SHADER_STRING
 
 - (void)useNextFrameForImageCapture;
 {
+
     usingNextFrameForImageCapture = YES;
 
     // Set the semaphore high, if it isn't already
-   
-    
     if ([self dispatchSemaphore:imageCaptureSemaphore dispatch:SemaphoreWait dispathTimeout:DISPATCH_TIME_NOW] != 0)
     {
         return;
@@ -184,24 +183,26 @@ NSString *const kGPUImagePassthroughFragmentShaderString = SHADER_STRING
 - (CGImageRef)newCGImageFromCurrentlyProcessedOutput
 {
 
-    NSLog(@"newCGImageFromCurrentlyProcessedOutput 1");
+
     // Give it three seconds to process, then abort if they forgot to set up the image capture properly
     double timeoutForImageCapture = 3.0;
     dispatch_time_t convertedTimeout = dispatch_time(DISPATCH_TIME_NOW, timeoutForImageCapture * NSEC_PER_SEC);
 
+    long dispatch = [self dispatchSemaphore:imageCaptureSemaphore dispatch:SemaphoreWait dispathTimeout:convertedTimeout];
 
-        NSLog(@"newCGImageFromCurrentlyProcessedOutput 2");
-    if ([self dispatchSemaphore:imageCaptureSemaphore dispatch:SemaphoreWait dispathTimeout:convertedTimeout] != 0)
+
+    if (dispatch != 0)
     {
+
         return NULL;
     }
 
-        NSLog(@"newCGImageFromCurrentlyProcessedOutput 3");
     GPUImageFramebuffer* framebuffer = [self framebufferForOutput];
     usingNextFrameForImageCapture = NO;
+
     [self dispatchSemaphore:imageCaptureSemaphore dispatch:SemaphoreSignal dispathTimeout:0];
     CGImageRef image = [framebuffer newCGImageFromFramebufferContents];
-        NSLog(@"newCGImageFromCurrentlyProcessedOutput 4");
+
     return image;
 }
 
@@ -211,8 +212,8 @@ NSString *const kGPUImagePassthroughFragmentShaderString = SHADER_STRING
     GPUImageFramebuffer* framebuffer = [self framebufferForOutput];
     usingNextFrameForImageCapture = NO;
     [self dispatchSemaphore:imageCaptureSemaphore dispatch:SemaphoreSignal dispathTimeout:0];
-    
     CGImageRef image = [framebuffer newCGImageFromFramebufferContents];
+    NSLog(@"image %@",image);
     return image;
 }
 

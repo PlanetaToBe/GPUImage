@@ -318,12 +318,13 @@ void dataProviderUnlockCallback (void *info, const void *data, size_t size)
 
 - (CGImageRef)newCGImageFromFramebufferContents;
 {
+
     // a CGImage can only be created from a 'normal' color texture
     NSAssert(self.textureOptions.internalFormat == GL_RGBA, @"For conversion to a CGImage the output texture format for this filter must be GL_RGBA.");
     NSAssert(self.textureOptions.type == GL_UNSIGNED_BYTE, @"For conversion to a CGImage the type of the output texture of this filter must be GL_UNSIGNED_BYTE.");
     
     __block CGImageRef cgImageFromBytes;
-    
+
     runSynchronouslyOnVideoProcessingQueue(^{
         [GPUImageContext useImageProcessingContext];
         
@@ -331,8 +332,8 @@ void dataProviderUnlockCallback (void *info, const void *data, size_t size)
         // It appears that the width of a texture must be padded out to be a multiple of 8 (32 bytes) if reading from it using a texture cache
         
         GLubyte *rawImagePixels;
-        
         CGDataProviderRef dataProvider = NULL;
+
         if ([GPUImageContext supportsFastTextureUpload])
         {
 #if TARGET_IPHONE_SIMULATOR || TARGET_OS_IPHONE
@@ -345,6 +346,7 @@ void dataProviderUnlockCallback (void *info, const void *data, size_t size)
             rawImagePixels = (GLubyte *)CVPixelBufferGetBaseAddress(renderTarget);
             dataProvider = CGDataProviderCreateWithData((__bridge_retained void*)self, rawImagePixels, paddedBytesForImage, dataProviderUnlockCallback);
             [[GPUImageContext sharedFramebufferCache] addFramebufferToActiveImageCaptureList:self]; // In case the framebuffer is swapped out on the filter, need to have a strong reference to it somewhere for it to hang on while the image is in existence
+
 #else
 #endif
         }
@@ -355,6 +357,7 @@ void dataProviderUnlockCallback (void *info, const void *data, size_t size)
             glReadPixels(0, 0, (int)_size.width, (int)_size.height, GL_RGBA, GL_UNSIGNED_BYTE, rawImagePixels);
             dataProvider = CGDataProviderCreateWithData(NULL, rawImagePixels, totalBytesForImage, dataProviderReleaseCallback);
 //            [self unlock]; // Don't need to keep this around anymore
+
         }
         
         CGColorSpaceRef defaultRGBColorSpace = CGColorSpaceCreateDeviceRGB();
@@ -365,10 +368,12 @@ void dataProviderUnlockCallback (void *info, const void *data, size_t size)
             cgImageFromBytes = CGImageCreate((int)_size.width, (int)_size.height, 8, 32, CVPixelBufferGetBytesPerRow(renderTarget), defaultRGBColorSpace, kCGBitmapByteOrder32Little | kCGImageAlphaPremultipliedFirst, dataProvider, NULL, NO, kCGRenderingIntentDefault);
 #else
 #endif
+
         }
         else
         {
             cgImageFromBytes = CGImageCreate((int)_size.width, (int)_size.height, 8, 32, 4 * (int)_size.width, defaultRGBColorSpace, kCGBitmapByteOrderDefault | kCGImageAlphaLast, dataProvider, NULL, NO, kCGRenderingIntentDefault);
+
         }
         
         // Capture image with current device orientation
@@ -376,7 +381,7 @@ void dataProviderUnlockCallback (void *info, const void *data, size_t size)
         CGColorSpaceRelease(defaultRGBColorSpace);
         
     });
-    
+
     return cgImageFromBytes;
 }
 

@@ -407,23 +407,17 @@ void reportAvailableMemoryForGPUImage(NSString *tag)
 
     if(dispatchType == SemaphoreSignal)
     {
-//        NSLog(@"dispatchSemaphore %@ Signal",semaphore);
-    
         return dispatch_semaphore_signal(semaphore);
         
     }else if(dispatchType == SemaphoreWait)
     {
         if(timeout != 0)
         {
-//            NSLog(@"dispatchSemaphore %@ Wait %llu",semaphore, timeout);
             
             return dispatch_semaphore_wait(semaphore, timeout);
-            
         }else{
-//            NSLog(@"dispatchSemaphore %@ Wait %llu",semaphore, DISPATCH_TIME_NOW);
             
             return dispatch_semaphore_wait(semaphore, DISPATCH_TIME_NOW);
-            
         }
     }else{
         return 0;
