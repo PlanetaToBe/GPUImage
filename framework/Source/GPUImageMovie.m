@@ -239,6 +239,8 @@
 
 - (void)processAsset
 {
+    
+    NSLog(@"GPUImageMovie:processAsset");
     reader = [self createAssetReader];
 
     if (_videoLoadCompletion) {
@@ -430,6 +432,7 @@
 
 - (BOOL)readNextVideoFrameFromOutput:(AVAssetReaderOutput *)readerVideoTrackOutput;
 {
+    NSLog(@"GPUImageMovie:readNextVideoFrameFromOutput");
     if (reader.status == AVAssetReaderStatusReading && ! videoEncodingIsFinished)
     {
         CMSampleBufferRef sampleBufferRef = [readerVideoTrackOutput copyNextSampleBuffer];
@@ -547,6 +550,13 @@
 
 - (void)processMovieFrame:(CVPixelBufferRef)movieFrame withSampleTime:(CMTime)currentSampleTime
 {
+    NSLog(@"processMovieFrame %lld",currentSampleTime.value );
+    if(currentSampleTime.value == 1000)
+    {
+        
+        NSLog(@"what?");
+//        return;
+    }
     
     int bufferHeight = (int) CVPixelBufferGetHeight(movieFrame);
     int bufferWidth = (int) CVPixelBufferGetWidth(movieFrame);
@@ -719,7 +729,6 @@
     else
     {
         
-        NSLog(@"processMovieFrame 3b");
         // Upload to texture
         CVPixelBufferLockBaseAddress(movieFrame, 0);
         
