@@ -263,9 +263,10 @@ NSString *const kGPUImageCropFragmentShaderString =  SHADER_STRING
 //                      newValue.origin.y >= 0 && newValue.origin.y <= 1 &&
 //                      newValue.size.width >= 0 && newValue.size.width <= 1 &&
 //                      newValue.size.height >= 0 && newValue.size.height <= 1);
-
-    _cropRegion = newValue;
-    [self calculateCropTextureCoordinates];
+    runAsynchronouslyOnVideoProcessingQueue(^{
+        _cropRegion = newValue;
+        [self calculateCropTextureCoordinates];
+    });
 }
 
 - (void)setInputRotation:(GPUImageRotationMode)newInputRotation atIndex:(NSInteger)textureIndex;

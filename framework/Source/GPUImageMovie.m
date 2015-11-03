@@ -550,12 +550,11 @@
 
 - (void)processMovieFrame:(CVPixelBufferRef)movieFrame withSampleTime:(CMTime)currentSampleTime
 {
-    NSLog(@"processMovieFrame %lld",currentSampleTime.value );
+
+    //when playing after pause the movieplayers sampletime will inexplicably jump to 1000 before it jumps back to its regular time. weird. 
     if(currentSampleTime.value == 1000)
     {
-        
-        NSLog(@"what?");
-//        return;
+        return;
     }
     
     int bufferHeight = (int) CVPixelBufferGetHeight(movieFrame);
