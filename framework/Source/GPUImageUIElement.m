@@ -115,11 +115,7 @@
             NSInteger textureIndexOfTarget = [[targetTextureIndices objectAtIndex:indexOfObject] integerValue];
             
             [currentTarget setInputSize:layerPixelSize atIndex:textureIndexOfTarget];
-<<<<<<< HEAD
-            
-=======
             [currentTarget setInputFramebuffer:outputFramebuffer atIndex:textureIndexOfTarget];
->>>>>>> 631e4eb703102dc3d5925fb962cc307acd1350e9
             [currentTarget newFrameReadyAtTime:frameTime atIndex:textureIndexOfTarget];
         }
     }    
