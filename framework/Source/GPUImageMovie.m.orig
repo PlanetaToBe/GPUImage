@@ -557,9 +557,9 @@
     {
         return;
     }
-    
 =======
->>>>>>> 631e4eb703102dc3d5925fb962cc307acd1350e9
+>>>>>>> what
+    
     int bufferHeight = (int) CVPixelBufferGetHeight(movieFrame);
     int bufferWidth = (int) CVPixelBufferGetWidth(movieFrame);
 
