@@ -550,14 +550,6 @@
 
 - (void)processMovieFrame:(CVPixelBufferRef)movieFrame withSampleTime:(CMTime)currentSampleTime
 {
-    NSLog(@"processMovieFrame %lld",currentSampleTime.value );
-    if(currentSampleTime.value == 1000)
-    {
-        
-        NSLog(@"what?");
-//        return;
-    }
-    
     int bufferHeight = (int) CVPixelBufferGetHeight(movieFrame);
     int bufferWidth = (int) CVPixelBufferGetWidth(movieFrame);
 
