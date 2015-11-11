@@ -74,7 +74,6 @@ NSString *const kGPUImageCropFragmentShaderString =  SHADER_STRING
 - (void)setInputSize:(CGSize)newSize atIndex:(NSInteger)textureIndex;
 {
     
-
     if (self.preventRendering)
     {
         return;
@@ -104,14 +103,31 @@ NSString *const kGPUImageCropFragmentShaderString =  SHADER_STRING
     
     if (CGSizeEqualToSize(scaledSize, CGSizeZero))
     {
-        inputTextureSize = scaledSize;
+        inputTextureSize = originallySuppliedInputSize;//scaledSize;
     }
     else if (!CGSizeEqualToSize(inputTextureSize, scaledSize))
     {
-        inputTextureSize = scaledSize;
+        inputTextureSize = originallySuppliedInputSize;//scaledSize;
     }
     
 }
+
+
+- (CGSize)sizeOfFBO;
+{
+    
+    CGSize outputSize = [self maximumOutputSize];
+    if ( (CGSizeEqualToSize(outputSize, CGSizeZero)) || (inputTextureSize.width < outputSize.width) )
+    {
+        
+        return inputTextureSize;
+    }
+    else
+    {
+        return outputSize;
+    }
+}
+
 
 #pragma mark -
 #pragma mark GPUImageInput
@@ -253,6 +269,50 @@ NSString *const kGPUImageCropFragmentShaderString =  SHADER_STRING
     [self informTargetsAboutNewFrameAtTime:frameTime];
 
 }
+
+
+- (void)renderToTextureWithVertices:(const GLfloat *)vertices textureCoordinates:(const GLfloat *)textureCoordinates;
+{
+    if (self.preventRendering)
+    {
+        [firstInputFramebuffer unlock];
+        return;
+    }
+    
+    [GPUImageContext setActiveShaderProgram:filterProgram];
+    
+    outputFramebuffer = [[GPUImageContext sharedFramebufferCache] fetchFramebufferForSize:[self sizeOfFBO] textureOptions:self.outputTextureOptions onlyTexture:NO];
+    [outputFramebuffer activateFramebuffer];
+    if (usingNextFrameForImageCapture)
+    {
+        [outputFramebuffer lock];
+    }
+    
+    [self setUniformsForProgramAtIndex:0];
+    
+    glClearColor(backgroundColorRed, backgroundColorGreen, backgroundColorBlue, backgroundColorAlpha);
+    glClear(GL_COLOR_BUFFER_BIT);
+    
+    glActiveTexture(GL_TEXTURE2);
+    glBindTexture(GL_TEXTURE_2D, [firstInputFramebuffer texture]);
+    
+    glUniform1i(filterInputTextureUniform, 2);
+    
+    glVertexAttribPointer(filterPositionAttribute, 2, GL_FLOAT, 0, 0, vertices);
+    glVertexAttribPointer(filterTextureCoordinateAttribute, 2, GL_FLOAT, 0, 0, textureCoordinates);
+    
+    glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+    
+    [firstInputFramebuffer unlock];
+    
+    if (usingNextFrameForImageCapture)
+    {
+        [self dispatchSemaphore:imageCaptureSemaphore dispatch:SemaphoreSignal dispathTimeout:0];
+        
+    }
+}
+
+
 
 #pragma mark -
 #pragma mark Accessors

@@ -17,8 +17,6 @@
     GLint displayPositionAttribute, displayTextureCoordinateAttribute;
     GLint displayInputTextureUniform;
 
-    CGSize inputImageSize;
-    GLfloat imageVertices[8];
     GLfloat backgroundColorRed, backgroundColorGreen, backgroundColorBlue, backgroundColorAlpha;
 
     CGSize boundsSizeAtFrameBufferEpoch;
@@ -52,6 +50,7 @@
 {
 	return [CAEAGLLayer class];
 }
+
 
 - (id)initWithFrame:(CGRect)frame
 {
@@ -409,6 +408,7 @@
 
 - (void)setInputSize:(CGSize)newSize atIndex:(NSInteger)textureIndex;
 {
+
     runSynchronouslyOnVideoProcessingQueue(^{
         CGSize rotatedSize = newSize;
         
