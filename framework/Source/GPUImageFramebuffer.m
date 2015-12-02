@@ -41,6 +41,11 @@ void dataProviderUnlockCallback (void *info, const void *data, size_t size);
     {
 		return nil;
     }
+
+    // patch for crashes related to framebufferSize of size 0
+    if (framebufferSize.width == 0 || framebufferSize.height == 0) {
+        framebufferSize = (CGSize){2.f, 2.f};
+    }
     
     _textureOptions = fboTextureOptions;
     _size = framebufferSize;
