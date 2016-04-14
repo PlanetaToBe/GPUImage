@@ -4,6 +4,8 @@
 
 #define MAXSHADERPROGRAMSALLOWEDINCACHE 40
 
+extern dispatch_queue_attr_t GPUImageDefaultQueueAttribute(void);
+
 @interface GPUImageContext()
 {
     NSMutableDictionary *shaderProgramCache;
@@ -31,7 +33,7 @@ static void *openGLESContextQueueKey;
     }
 
 	openGLESContextQueueKey = &openGLESContextQueueKey;
-    _contextQueue = dispatch_queue_create("com.sunsetlakesoftware.GPUImage.openGLESContextQueue", NULL);
+    _contextQueue = dispatch_queue_create("com.sunsetlakesoftware.GPUImage.openGLESContextQueue", GPUImageDefaultQueueAttribute());
     
 #if (!defined(__IPHONE_6_0) || (__IPHONE_OS_VERSION_MIN_REQUIRED < __IPHONE_6_0))
 #else
