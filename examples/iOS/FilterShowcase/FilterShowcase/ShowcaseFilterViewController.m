@@ -82,8 +82,8 @@ GPUImageLocalBinaryPatternFilter *binary;
 
 - (void)setupFilter;
 {
-//    videoCamera = [[GPUImageVideoCamera alloc] initWithSessionPreset:AVCaptureSessionPreset640x480 cameraPosition:AVCaptureDevicePositionBack];
-    videoCamera = [[GPUImageVideoCamera alloc] initWithSessionPreset:AVCaptureSessionPreset1280x720 cameraPosition:AVCaptureDevicePositionFront];
+    videoCamera = [[GPUImageVideoCamera alloc] initWithSessionPreset:AVCaptureSessionPreset640x480 cameraPosition:AVCaptureDevicePositionBack];
+//    videoCamera = [[GPUImageVideoCamera alloc] initWithSessionPreset:AVCaptureSessionPreset1280x720 cameraPosition:AVCaptureDevicePositionFront];
 //    videoCamera = [[GPUImageVideoCamera alloc] initWithSessionPreset:AVCaptureSessionPreset1920x1080 cameraPosition:AVCaptureDevicePositionBack];
 //    videoCamera = [[GPUImageVideoCamera alloc] initWithSessionPreset:AVCaptureSessionPreset640x480 cameraPosition:AVCaptureDevicePositionFront];
     videoCamera.outputImageOrientation = UIInterfaceOrientationPortrait;
@@ -609,29 +609,38 @@ GPUImageLocalBinaryPatternFilter *binary;
             self.title = @"Local Binary Pattern";
             self.filterSettingsSlider.hidden = NO;
             
-            [self.filterSettingsSlider setMinimumValue:0.5];
-            [self.filterSettingsSlider setMaximumValue:6.0];
+            [self.filterSettingsSlider setMinimumValue:0.1];
+            [self.filterSettingsSlider setMaximumValue:10.0];
             [self.filterSettingsSlider setValue:1.0];
 
             GPUImageFilterGroup *g = [GPUImageFilterGroup new];
 
-//            GPUImageLaplacianFilter *low = [GPUImageLaplacianFilter new];
-//            GPUImagePoissonBlendFilter *blend = [GPUImagePoissonBlendFilter new];
-//            GPUImageLowPassFilter *low = [GPUImageLowPassFilter new];
+            GPUImageCrosshairGenerator *crosshairGenerator = [[GPUImageCrosshairGenerator alloc] init];
+            crosshairGenerator.crosshairWidth = 15.0;
+            [crosshairGenerator forceProcessingAtSize:CGSizeMake(480.0, 640.0)];
 
-//            GPUImageBilateralFilter *low = [GPUImageBilateralFilter new];
-//            low.distanceNormalizationFactor = 20;
+            GPUImageShiTomasiFeatureDetectionFilter *det = [GPUImageShiTomasiFeatureDetectionFilter.alloc init];
+            det.sensitivity = 1.5;
+            [det setCornersDetectedBlock:^(GLfloat* cornerArray, NSUInteger cornersDetected, CMTime frameTime) {
+                [crosshairGenerator renderCrosshairsFromArray:cornerArray count:cornersDetected frameTime:frameTime];
+            }];
+
+            GPUImageAlphaBlendFilter *blendFilter = [[GPUImageAlphaBlendFilter alloc] init];
+            [blendFilter forceProcessingAtSize:CGSizeMake(480.0, 640.0)];
 
             binary = [GPUImageLocalBinaryPatternFilter new];
-//            [g addFilter:low];
-//            [g addFilter:binary];
-//
-//            [binary addTarget:low];
-//        
-//            g.initialFilters = @[binary];
-//            g.terminalFilter = low;
+            [binary addTarget:det];
+            [binary addTarget:blendFilter];
+            [crosshairGenerator addTarget:blendFilter];
 
-            filter = binary;
+            [g addFilter:binary];
+            [g addFilter:det];
+            [g addFilter:blendFilter];
+
+            g.initialFilters = @[binary];
+            g.terminalFilter = blendFilter;
+
+            filter = g;
 
         }; break;
         case GPUIMAGE_BUFFER:

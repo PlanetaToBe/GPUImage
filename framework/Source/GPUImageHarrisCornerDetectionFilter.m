@@ -176,12 +176,12 @@ NSString *const kGPUImageHarrisCornerDetectionFragmentShaderString = SHADER_STRI
 //    }];
 //#endif
     
-    [derivativeFilter addTarget:blurFilter];    
+//    [derivativeFilter addTarget:blurFilter];    
     [blurFilter addTarget:harrisCornerDetectionFilter];
     [harrisCornerDetectionFilter addTarget:nonMaximumSuppressionFilter];
 //    [simpleThresholdFilter addTarget:colorPackingFilter];
     
-    self.initialFilters = [NSArray arrayWithObjects:derivativeFilter, nil];
+    self.initialFilters = [NSArray arrayWithObjects:blurFilter, nil];
 //    self.terminalFilter = colorPackingFilter;
     self.terminalFilter = nonMaximumSuppressionFilter;
     
@@ -197,6 +197,8 @@ NSString *const kGPUImageHarrisCornerDetectionFragmentShaderString = SHADER_STRI
     free(rawImagePixels);
     free(cornersArray);
 }
+
+int numFeatures = 4096;
 
 #pragma mark -
 #pragma mark Corner extraction
@@ -215,7 +217,7 @@ NSString *const kGPUImageHarrisCornerDetectionFragmentShaderString = SHADER_STRI
     if (rawImagePixels == NULL)
     {
         rawImagePixels = (GLubyte *)malloc(imageByteSize);
-        cornersArray = calloc(512 * 2, sizeof(GLfloat));
+        cornersArray = calloc(numFeatures * 2, sizeof(GLfloat));
     }    
     
     glReadPixels(0, 0, (int)imageSize.width, (int)imageSize.height, GL_RGBA, GL_UNSIGNED_BYTE, rawImagePixels);
@@ -239,8 +241,8 @@ NSString *const kGPUImageHarrisCornerDetectionFragmentShaderString = SHADER_STRI
             cornersArray[cornerStorageIndex++] = (CGFloat)(yCoordinate) / imageSize.height;
             numberOfCorners++;
             
-            numberOfCorners = MIN(numberOfCorners, 511);
-            cornerStorageIndex = MIN(cornerStorageIndex, 1021);
+            numberOfCorners = MIN(numberOfCorners, numFeatures-1);
+            cornerStorageIndex = MIN(cornerStorageIndex, numFeatures*2 - 3);
         }
         currentByte +=4;
     }
