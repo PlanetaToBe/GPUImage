@@ -609,18 +609,17 @@ GPUImageLocalBinaryPatternFilter *binary;
             self.title = @"Local Binary Pattern";
             self.filterSettingsSlider.hidden = NO;
             
-            [self.filterSettingsSlider setMinimumValue:0.1];
+            [self.filterSettingsSlider setMinimumValue:0.01];
             [self.filterSettingsSlider setMaximumValue:10.0];
             [self.filterSettingsSlider setValue:1.0];
 
             GPUImageFilterGroup *g = [GPUImageFilterGroup new];
 
             GPUImageCrosshairGenerator *crosshairGenerator = [[GPUImageCrosshairGenerator alloc] init];
-            crosshairGenerator.crosshairWidth = 15.0;
+            crosshairGenerator.crosshairWidth = 10.0;
             [crosshairGenerator forceProcessingAtSize:CGSizeMake(480.0, 640.0)];
 
             GPUImageShiTomasiFeatureDetectionFilter *det = [GPUImageShiTomasiFeatureDetectionFilter.alloc init];
-            det.sensitivity = 1.5;
             [det setCornersDetectedBlock:^(GLfloat* cornerArray, NSUInteger cornersDetected, CMTime frameTime) {
                 [crosshairGenerator renderCrosshairsFromArray:cornerArray count:cornersDetected frameTime:frameTime];
             }];

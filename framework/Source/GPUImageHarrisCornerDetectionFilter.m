@@ -185,7 +185,7 @@ NSString *const kGPUImageHarrisCornerDetectionFragmentShaderString = SHADER_STRI
 //    self.terminalFilter = colorPackingFilter;
     self.terminalFilter = nonMaximumSuppressionFilter;
     
-    self.blurRadiusInPixels = 2.0;
+    self.blurRadiusInPixels = 3.0;
     self.sensitivity = 5.0;
     self.threshold = 0.20;
     
