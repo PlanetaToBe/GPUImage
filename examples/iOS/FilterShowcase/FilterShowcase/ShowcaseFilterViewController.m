@@ -6,6 +6,8 @@
 #pragma mark -
 #pragma mark Initialization and teardown
 
+GPUImageLocalBinaryPatternFilter *binary;
+
 - (id)initWithFilterType:(GPUImageShowcaseFilterType)newFilterType;
 {
     self = [super initWithNibName:@"ShowcaseFilterViewController" bundle:nil];
@@ -13,6 +15,7 @@
     {
         filterType = newFilterType;
     }
+
     return self;
 }
 
@@ -37,8 +40,17 @@
         self.faceDetector = [CIDetector detectorOfType:CIDetectorTypeFace context:nil options:detectorOptions];
         faceThinking = NO;
     }
-    
+
+    UITapGestureRecognizer *tap = [UITapGestureRecognizer.alloc initWithTarget:self action:@selector(handleVideoTap:)];
+    tap.numberOfTapsRequired = 2;
+    [self.view addGestureRecognizer:tap];
+
     [self setupFilter];
+}
+
+- (void)handleVideoTap:(UITapGestureRecognizer *)sender
+{
+    [videoCamera rotateCamera];
 }
 
 - (void)viewWillDisappear:(BOOL)animated
@@ -70,11 +82,12 @@
 
 - (void)setupFilter;
 {
-    videoCamera = [[GPUImageVideoCamera alloc] initWithSessionPreset:AVCaptureSessionPreset640x480 cameraPosition:AVCaptureDevicePositionBack];
-//    videoCamera = [[GPUImageVideoCamera alloc] initWithSessionPreset:AVCaptureSessionPreset1280x720 cameraPosition:AVCaptureDevicePositionBack];
+//    videoCamera = [[GPUImageVideoCamera alloc] initWithSessionPreset:AVCaptureSessionPreset640x480 cameraPosition:AVCaptureDevicePositionBack];
+    videoCamera = [[GPUImageVideoCamera alloc] initWithSessionPreset:AVCaptureSessionPreset1280x720 cameraPosition:AVCaptureDevicePositionFront];
 //    videoCamera = [[GPUImageVideoCamera alloc] initWithSessionPreset:AVCaptureSessionPreset1920x1080 cameraPosition:AVCaptureDevicePositionBack];
 //    videoCamera = [[GPUImageVideoCamera alloc] initWithSessionPreset:AVCaptureSessionPreset640x480 cameraPosition:AVCaptureDevicePositionFront];
     videoCamera.outputImageOrientation = UIInterfaceOrientationPortrait;
+    videoCamera.horizontallyMirrorFrontFacingCamera = YES;
     facesSwitch.hidden = YES;
     facesLabel.hidden = YES;
     BOOL needsSecondImage = NO;
@@ -596,11 +609,30 @@
             self.title = @"Local Binary Pattern";
             self.filterSettingsSlider.hidden = NO;
             
-            [self.filterSettingsSlider setMinimumValue:1.0];
-            [self.filterSettingsSlider setMaximumValue:5.0];
+            [self.filterSettingsSlider setMinimumValue:0.5];
+            [self.filterSettingsSlider setMaximumValue:6.0];
             [self.filterSettingsSlider setValue:1.0];
-            
-            filter = [[GPUImageLocalBinaryPatternFilter alloc] init];
+
+            GPUImageFilterGroup *g = [GPUImageFilterGroup new];
+
+//            GPUImageLaplacianFilter *low = [GPUImageLaplacianFilter new];
+//            GPUImagePoissonBlendFilter *blend = [GPUImagePoissonBlendFilter new];
+//            GPUImageLowPassFilter *low = [GPUImageLowPassFilter new];
+
+//            GPUImageBilateralFilter *low = [GPUImageBilateralFilter new];
+//            low.distanceNormalizationFactor = 20;
+
+            binary = [GPUImageLocalBinaryPatternFilter new];
+//            [g addFilter:low];
+//            [g addFilter:binary];
+//
+//            [binary addTarget:low];
+//        
+//            g.initialFilters = @[binary];
+//            g.terminalFilter = low;
+
+            filter = binary;
+
         }; break;
         case GPUIMAGE_BUFFER:
         {
@@ -1663,8 +1695,8 @@
         case GPUIMAGE_LOCALBINARYPATTERN:
         {
             CGFloat multiplier = [(UISlider *)sender value];
-            [(GPUImageLocalBinaryPatternFilter *)filter setTexelWidth:(multiplier / self.view.bounds.size.width)];
-            [(GPUImageLocalBinaryPatternFilter *)filter setTexelHeight:(multiplier / self.view.bounds.size.height)];
+            [binary setTexelWidth:(multiplier / self.view.bounds.size.width)];
+            [binary setTexelHeight:(multiplier / self.view.bounds.size.height)];
         }; break;
         default: break;
     }

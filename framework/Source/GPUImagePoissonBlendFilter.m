@@ -109,7 +109,7 @@ NSString *const kGPUImagePoissonBlendFragmentShaderString = SHADER_STRING
     mixUniform = [filterProgram uniformIndex:@"mixturePercent"];
     self.mix = 0.5;
     
-    self.numIterations = 10;
+    self.numIterations = 4;
     
     return self;
 }
@@ -134,7 +134,7 @@ NSString *const kGPUImagePoissonBlendFragmentShaderString = SHADER_STRING
 {
     // Run the first stage of the two-pass filter
     [GPUImageContext setActiveShaderProgram:filterProgram];
-    
+
     [super renderToTextureWithVertices:vertices textureCoordinates:textureCoordinates];
     
     for (int pass = 1; pass < self.numIterations; pass++) {
@@ -145,6 +145,7 @@ NSString *const kGPUImagePoissonBlendFragmentShaderString = SHADER_STRING
             
             // TODO: This will over-unlock the incoming framebuffer
             [super renderToTextureWithVertices:vertices textureCoordinates:[[self class] textureCoordinatesForRotation:kGPUImageNoRotation]];
+
         } else {
             // Run the second stage of the two-pass filter
             secondOutputFramebuffer = [[GPUImageContext sharedFramebufferCache] fetchFramebufferForSize:[self sizeOfFBO] textureOptions:self.outputTextureOptions onlyTexture:NO];
