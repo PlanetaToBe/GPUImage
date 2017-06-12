@@ -1,11 +1,11 @@
 #import "GPUImageFilterGroup.h"
 #import "GPUImageBuffer.h"
-#import "GPUImageTwoInputFilter.h"
+#import "GPUImageDissolveBlendFilter.h"
 
 @interface GPUImageLowPassFilter : GPUImageFilterGroup
 {
     GPUImageBuffer *bufferFilter;
-    GPUImageTwoInputFilter *dissolveBlendFilter;
+    GPUImageDissolveBlendFilter *dissolveBlendFilter;
 }
 
 // This controls the degree by which the previous accumulated frames are blended with the current one. This ranges from 0.0 to 1.0, with a default of 0.5.

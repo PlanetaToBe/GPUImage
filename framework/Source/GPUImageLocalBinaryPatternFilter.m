@@ -35,9 +35,11 @@ NSString *const kGPUImageLocalBinaryPatternFragmentShaderString = SHADER_STRING
  uniform float pattern[9];
 
  uniform sampler2D inputImageTexture;
+ const mediump vec3 lu = vec3(0.2125, 0.7154, 0.0721);
 
  float pixel(vec2 coord) {
-     return length(texture2D(inputImageTexture, coord).rr);
+     float lum = dot(texture2D(inputImageTexture, coord).rgb, lu);
+     return smoothstep(0.001, 0.99, lum);
  }
 
  void main()
@@ -59,19 +61,19 @@ NSString *const kGPUImageLocalBinaryPatternFragmentShaderString = SHADER_STRING
      float max = centerIntensity * range;
      float range = pattern[8];
      float byteTally;
-     byteTally  = pattern[0] / range * smoothstep(min, max, topRightIntensity);
+
+     byteTally  = pattern[0] / range * smoothstep(min, max, topLeftIntensity);
      byteTally += pattern[1] / range * smoothstep(min, max, topIntensity);
-     byteTally += pattern[2] / range * smoothstep(min, max, topLeftIntensity);
+     byteTally += pattern[2] / range * smoothstep(min, max, topRightIntensity);
 
      byteTally += pattern[3] / range * smoothstep(min, max, leftIntensity);
-     byteTally += pattern[4] / range * smoothstep(min, max, bottomLeftIntensity);
-     byteTally += pattern[5] / range * smoothstep(min, max, bottomIntensity);
+     byteTally += pattern[4] / range * smoothstep(min, max, rightIntensity);
 
-     byteTally += pattern[6] / range * smoothstep(min, max, bottomRightIntensity);
-     byteTally += pattern[7] / range * smoothstep(min, max, rightIntensity);
+     byteTally += pattern[5] / range * smoothstep(min, max, bottomLeftIntensity);
+     byteTally += pattern[6] / range * smoothstep(min, max, bottomIntensity);
+     byteTally += pattern[7] / range * smoothstep(min, max, bottomRightIntensity);
 
-//     byteTally = 1. - pow(byteTally, 1.618);
-//     byteTally = smoothstep(0.1, 0.4, byteTally);
+     //     byteTally = 1. - pow(byteTally, 1.618);
 
      // TODO: Replace the above with a dot product and two vec4s
      // TODO: Apply step to a matrix, rather than individually
@@ -97,12 +99,17 @@ NSString *const kGPUImageLocalBinaryPatternFragmentShaderString = SHADER_STRING
     // 128 64 32 ...
     //
 
-    [self setFloat:1.05 forUniformName:@"range"];
+    [self setFloat:1.001 forUniformName:@"range"];
 
-    GLfloat pattern[9] = {1, 2, 4, 8, 16, 32, 64, 128, /* range: */ 150};
+    GLfloat pattern[9] = {1, 2, 4, 8, 16, 32, 64, 128, /* range: */ 255};
     [self setFloatArray:pattern length:9 forUniform:@"pattern"];
 
     return self;
+}
+
+- (void)setPattern:(GLfloat *)pattern
+{
+    [self setFloatArray:pattern length:9 forUniform:@"pattern"];
 }
 
 @end

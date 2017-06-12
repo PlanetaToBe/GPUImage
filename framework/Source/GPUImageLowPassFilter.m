@@ -1,5 +1,4 @@
 #import "GPUImageLowPassFilter.h"
-#import "GPUImage.h"
 
 @implementation GPUImageLowPassFilter
 
@@ -13,18 +12,17 @@
     }
     
     // Take in the frame and blend it with the previous one
-    dissolveBlendFilter = [[GPUImageDifferenceBlendFilter alloc] init];
+    dissolveBlendFilter = [[GPUImageDissolveBlendFilter alloc] init];
     [self addFilter:dissolveBlendFilter];
     
     // Buffer the result to be fed back into the blend
     bufferFilter = [[GPUImageBuffer alloc] init];
     [self addFilter:bufferFilter];
-    bufferFilter.bufferSize = 2;
     
     // Texture location 0 needs to be the original image for the dissolve blend
     [bufferFilter addTarget:dissolveBlendFilter atTextureLocation:1];
     [dissolveBlendFilter addTarget:bufferFilter];
-
+    
     [dissolveBlendFilter disableSecondFrameCheck];
     
     // To prevent double updating of this filter, disable updates from the sharp image side
@@ -33,8 +31,8 @@
     self.initialFilters = [NSArray arrayWithObject:dissolveBlendFilter];
     self.terminalFilter = dissolveBlendFilter;
     
-    self.filterStrength = 1.0;
-
+    self.filterStrength = 0.5;
+    
     return self;
 }
 
@@ -43,12 +41,12 @@
 
 - (void)setFilterStrength:(CGFloat)newValue;
 {
-
+    dissolveBlendFilter.mix = newValue;
 }
 
 - (CGFloat)filterStrength;
 {
-    return 0;
+    return dissolveBlendFilter.mix;
 }
 
 - (void)addTarget:(id<GPUImageInput>)newTarget atTextureLocation:(NSInteger)textureLocation;

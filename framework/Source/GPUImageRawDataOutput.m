@@ -106,6 +106,7 @@
     if(lockNextFramebuffer)
     {
         retainedFramebuffer = outputFramebuffer;
+        [retainedFramebuffer lock];
         [retainedFramebuffer lockForReading];
         lockNextFramebuffer = NO;
     }

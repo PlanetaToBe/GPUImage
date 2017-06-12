@@ -185,7 +185,7 @@ NSString *const kGPUImageHarrisCornerDetectionFragmentShaderString = SHADER_STRI
 //    self.terminalFilter = colorPackingFilter;
     self.terminalFilter = nonMaximumSuppressionFilter;
     
-    self.blurRadiusInPixels = 3.0;
+    self.blurRadiusInPixels = 2.0;
     self.sensitivity = 5.0;
     self.threshold = 0.20;
     
@@ -222,7 +222,7 @@ int numFeatures = 4096;
     
     glReadPixels(0, 0, (int)imageSize.width, (int)imageSize.height, GL_RGBA, GL_UNSIGNED_BYTE, rawImagePixels);
 
-    CFAbsoluteTime startTime = CFAbsoluteTimeGetCurrent();
+//    CFAbsoluteTime startTime = CFAbsoluteTimeGetCurrent();
 
     unsigned int imageWidth = imageSize.width * 4;
     
@@ -247,8 +247,8 @@ int numFeatures = 4096;
         currentByte +=4;
     }
     
-    CFAbsoluteTime currentFrameTime = (CFAbsoluteTimeGetCurrent() - startTime);
-    NSLog(@"Processing time : %f ms", 1000.0 * currentFrameTime);
+//    CFAbsoluteTime currentFrameTime = (CFAbsoluteTimeGetCurrent() - startTime);
+//    NSLog(@"Processing time : %f ms", 1000.0 * currentFrameTime);
 
     if (cornersDetectedBlock != NULL)
     {
