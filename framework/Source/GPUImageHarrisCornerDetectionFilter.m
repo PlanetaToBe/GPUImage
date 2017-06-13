@@ -17,6 +17,9 @@
 
 @implementation GPUImageHarrisCornerDetectionFilter
 
+int numFeatures = 6144;
+
+
 #if TARGET_IPHONE_SIMULATOR || TARGET_OS_IPHONE
 NSString *const kGPUImageHarrisCornerDetectionFragmentShaderString = SHADER_STRING
 ( 
@@ -197,8 +200,6 @@ NSString *const kGPUImageHarrisCornerDetectionFragmentShaderString = SHADER_STRI
     free(rawImagePixels);
     free(cornersArray);
 }
-
-int numFeatures = 4096;
 
 #pragma mark -
 #pragma mark Corner extraction

@@ -59,21 +59,21 @@ NSString *const kGPUImageLocalBinaryPatternFragmentShaderString = SHADER_STRING
      
      float min = centerIntensity / range;
      float max = centerIntensity * range;
-     float range = pattern[8];
+     float total = pattern[8];
      float byteTally;
 
-     byteTally  = pattern[0] / range * smoothstep(min, max, topLeftIntensity);
-     byteTally += pattern[1] / range * smoothstep(min, max, topIntensity);
-     byteTally += pattern[2] / range * smoothstep(min, max, topRightIntensity);
+     byteTally  = pattern[0] / total * smoothstep(min, max, topLeftIntensity);
+     byteTally += pattern[1] / total * smoothstep(min, max, topIntensity);
+     byteTally += pattern[2] / total * smoothstep(min, max, topRightIntensity);
 
-     byteTally += pattern[3] / range * smoothstep(min, max, leftIntensity);
-     byteTally += pattern[4] / range * smoothstep(min, max, rightIntensity);
+     byteTally += pattern[3] / total * smoothstep(min, max, leftIntensity);
+     byteTally += pattern[4] / total * smoothstep(min, max, rightIntensity);
 
-     byteTally += pattern[5] / range * smoothstep(min, max, bottomLeftIntensity);
-     byteTally += pattern[6] / range * smoothstep(min, max, bottomIntensity);
-     byteTally += pattern[7] / range * smoothstep(min, max, bottomRightIntensity);
+     byteTally += pattern[5] / total * smoothstep(min, max, bottomLeftIntensity);
+     byteTally += pattern[6] / total * smoothstep(min, max, bottomIntensity);
+     byteTally += pattern[7] / total * smoothstep(min, max, bottomRightIntensity);
 
-     //     byteTally = 1. - pow(byteTally, 1.618);
+//     byteTally = 1. - pow(byteTally, 1.618);
 
      // TODO: Replace the above with a dot product and two vec4s
      // TODO: Apply step to a matrix, rather than individually
@@ -92,16 +92,11 @@ NSString *const kGPUImageLocalBinaryPatternFragmentShaderString = SHADER_STRING
 		return nil;
     }
 
-    // 1 4 2 8 16 64 32 128
-    // 1 2 4 8 128 64 32 16
-    // 1 -1 1 -1 ....
-    // 128 1 2 64 4 32 8 16
-    // 128 64 32 ...
-    //
+    [self setFloat:1.05 forUniformName:@"range"];
 
-    [self setFloat:1.001 forUniformName:@"range"];
-
-    GLfloat pattern[9] = {1, 2, 4, 8, 16, 32, 64, 128, /* range: */ 255};
+    GLfloat pattern[9] = {4, 2, 1, 8, 128, 16, 32, 64, /* range: */ 175}; //standard
+//    GLfloat pattern[9] = {32, 64, 128, 16, 1, 8, 4, 2, /* range: */ 175}; //reverse
+//    GLfloat pattern[9] = {1, 2, 4, 8, 16, 32, 64, 128, /* range: */ 175}; //more stable
     [self setFloatArray:pattern length:9 forUniform:@"pattern"];
 
     return self;

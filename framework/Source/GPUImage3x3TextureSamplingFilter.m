@@ -20,27 +20,46 @@ NSString *const kGPUImageNearbyTexelSamplingVertexShaderString = SHADER_STRING
  varying vec2 bottomTextureCoordinate;
  varying vec2 bottomLeftTextureCoordinate;
  varying vec2 bottomRightTextureCoordinate;
+
+ vec2 circlePoint(float angle, float radius) {
+     return vec2(cos(angle) * radius,
+                 sin(angle) * radius);
+ }
  
  void main()
  {
      gl_Position = position;
      
-     vec2 widthStep = vec2(texelWidth, 0.0);
-     vec2 heightStep = vec2(0.0, texelHeight);
-     vec2 widthHeightStep = vec2(texelWidth, texelHeight);
-     vec2 widthNegativeHeightStep = vec2(texelWidth, -texelHeight);
-     
-     textureCoordinate = inputTextureCoordinate.xy;
-     leftTextureCoordinate = inputTextureCoordinate.xy - widthStep;
-     rightTextureCoordinate = inputTextureCoordinate.xy + widthStep;
-     
-     topTextureCoordinate = inputTextureCoordinate.xy - heightStep;
-     topLeftTextureCoordinate = inputTextureCoordinate.xy - widthHeightStep;
-     topRightTextureCoordinate = inputTextureCoordinate.xy + widthNegativeHeightStep;
-     
-     bottomTextureCoordinate = inputTextureCoordinate.xy + heightStep;
-     bottomLeftTextureCoordinate = inputTextureCoordinate.xy - widthNegativeHeightStep;
-     bottomRightTextureCoordinate = inputTextureCoordinate.xy + widthHeightStep;
+//     vec2 widthStep = vec2(texelWidth, 0.0);
+//     vec2 heightStep = vec2(0.0, texelHeight);
+//     vec2 widthHeightStep = vec2(texelWidth, texelHeight);
+//     vec2 widthNegativeHeightStep = vec2(texelWidth, -texelHeight);
+//     
+//     textureCoordinate = inputTextureCoordinate.xy;
+//     leftTextureCoordinate = inputTextureCoordinate.xy - widthStep;
+//     rightTextureCoordinate = inputTextureCoordinate.xy + widthStep;
+//     
+//     topTextureCoordinate = inputTextureCoordinate.xy - heightStep;
+//     topLeftTextureCoordinate = inputTextureCoordinate.xy - widthHeightStep;
+//     topRightTextureCoordinate = inputTextureCoordinate.xy + widthNegativeHeightStep;
+//     
+//     bottomTextureCoordinate = inputTextureCoordinate.xy + heightStep;
+//     bottomLeftTextureCoordinate = inputTextureCoordinate.xy - widthNegativeHeightStep;
+//     bottomRightTextureCoordinate = inputTextureCoordinate.xy + widthHeightStep;
+
+     // degress:
+
+    float radius = texelWidth;
+
+    textureCoordinate = inputTextureCoordinate.xy;
+     rightTextureCoordinate = inputTextureCoordinate.xy + circlePoint(0., radius);
+     topRightTextureCoordinate = inputTextureCoordinate.xy + circlePoint(M_PI*.25, radius);
+     topTextureCoordinate = inputTextureCoordinate.xy + circlePoint(M_PI*.50, radius);
+     topLeftTextureCoordinate = inputTextureCoordinate.xy + circlePoint(M_PI*.75, radius);
+     leftTextureCoordinate = inputTextureCoordinate.xy + circlePoint(M_PI, radius);
+     bottomLeftTextureCoordinate = inputTextureCoordinate.xy + circlePoint(M_PI*1.25, radius);
+     bottomTextureCoordinate = inputTextureCoordinate.xy + circlePoint(M_PI*1.50, radius);
+     bottomRightTextureCoordinate = inputTextureCoordinate.xy + circlePoint(M_PI*1.75, radius);
  }
 );
 
