@@ -56,22 +56,42 @@ NSString *const kGPUImageLocalBinaryPatternFragmentShaderString = SHADER_STRING
      lowp float topRightIntensity = pixel(topRightTextureCoordinate);
      lowp float rightIntensity = pixel(rightTextureCoordinate);
      lowp float bottomRightIntensity = pixel(bottomRightTextureCoordinate);
-     
-     float min = centerIntensity / range;
-     float max = centerIntensity * range;
+
+     float dtl = abs(topLeftIntensity - centerIntensity);
+
+
+     float minv = centerIntensity / range;
+     float maxv = centerIntensity * range;
      float total = pattern[8];
      float byteTally;
 
-     byteTally  = pattern[0] / total * smoothstep(min, max, topLeftIntensity);
-     byteTally += pattern[1] / total * smoothstep(min, max, topIntensity);
-     byteTally += pattern[2] / total * smoothstep(min, max, topRightIntensity);
+     byteTally = length( vec4(pattern[1], pattern[6], pattern[3], pattern[4]) *
+                         vec4(smoothstep(minv, maxv, topIntensity),
+                              smoothstep(minv, maxv, bottomIntensity),
+                              smoothstep(minv, maxv, leftIntensity),
+                              smoothstep(minv, maxv, rightIntensity))
+                            +
+                         vec4(pattern[0], pattern[2], pattern[5], pattern[7]) *
+                         vec4(smoothstep(minv, maxv, topLeftIntensity),
+                              smoothstep(minv, maxv, topRightIntensity),
+                              smoothstep(minv, maxv, bottomLeftIntensity),
+                              smoothstep(minv, maxv, bottomRightIntensity))
+                        );
 
-     byteTally += pattern[3] / total * smoothstep(min, max, leftIntensity);
-     byteTally += pattern[4] / total * smoothstep(min, max, rightIntensity);
+//
+//     byteTally  = pattern[0] * smoothstep(minv, maxv, topLeftIntensity);
+//     byteTally += pattern[1] * smoothstep(minv, maxv, topIntensity);
+//     byteTally += pattern[2] * smoothstep(minv, maxv, topRightIntensity);
+//     byteTally += pattern[3] * smoothstep(minv, maxv, leftIntensity);
+//
+//     byteTally += pattern[4] * smoothstep(minv, maxv, rightIntensity);
+//     byteTally += pattern[5] * smoothstep(minv, maxv, bottomLeftIntensity);
+//     byteTally += pattern[6] * smoothstep(minv, maxv, bottomIntensity);
+//     byteTally += pattern[7] * smoothstep(minv, maxv, bottomRightIntensity);
 
-     byteTally += pattern[5] / total * smoothstep(min, max, bottomLeftIntensity);
-     byteTally += pattern[6] / total * smoothstep(min, max, bottomIntensity);
-     byteTally += pattern[7] / total * smoothstep(min, max, bottomRightIntensity);
+     byteTally = byteTally / total;
+
+//     byteTally = step(byteTally, centerIntensity);
 
 //     byteTally = 1. - pow(byteTally, 1.618);
 
@@ -92,10 +112,10 @@ NSString *const kGPUImageLocalBinaryPatternFragmentShaderString = SHADER_STRING
 		return nil;
     }
 
-    [self setFloat:1.05 forUniformName:@"range"];
+    [self setFloat:1.01 forUniformName:@"range"];
 
     GLfloat pattern[9] = {4, 2, 1, 8, 128, 16, 32, 64, /* range: */ 175}; //standard
-//    GLfloat pattern[9] = {32, 64, 128, 16, 1, 8, 4, 2, /* range: */ 175}; //reverse
+//    GLfloat pattern[9] = {32, 64, 128, 16, 1, 8, 4, 2, /* range: */ 275}; //reverse
 //    GLfloat pattern[9] = {1, 2, 4, 8, 16, 32, 64, 128, /* range: */ 175}; //more stable
     [self setFloatArray:pattern length:9 forUniform:@"pattern"];
 

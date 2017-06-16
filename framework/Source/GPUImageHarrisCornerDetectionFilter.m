@@ -17,7 +17,7 @@
 
 @implementation GPUImageHarrisCornerDetectionFilter
 
-int numFeatures = 6144;
+int numFeatures = 8196;
 
 
 #if TARGET_IPHONE_SIMULATOR || TARGET_OS_IPHONE
