@@ -64,8 +64,11 @@
         }
     }
 
-    // Let the downstream video elements see the previous frame from the buffer before rendering a new one into place
-    [self informTargetsAboutNewFrameAtTime:frameTime];
+    if ([bufferedFramebuffers count] >= _bufferSize)
+    {
+        // Let the downstream video elements see the previous frame from the buffer before rendering a new one into place
+        [self informTargetsAboutNewFrameAtTime:frameTime];
+    }
  
 //    [self renderToTextureWithVertices:imageVertices textureCoordinates:[[self class] textureCoordinatesForRotation:inputRotation]];
 }
