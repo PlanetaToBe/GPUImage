@@ -38,19 +38,22 @@
 
 - (void)newFrameReadyAtTime:(CMTime)frameTime atIndex:(NSInteger)textureIndex;
 {
+    
     if ([bufferedFramebuffers count] >= _bufferSize)
     {
+        
         outputFramebuffer = [bufferedFramebuffers objectAtIndex:0];
         [bufferedFramebuffers removeObjectAtIndex:0];
+        [bufferedFramebuffers insertObject:firstInputFramebuffer atIndex:_bufferSize-1];
     }
     else
     {
         // Nothing yet in the buffer, so don't process further until the buffer is full
         outputFramebuffer = firstInputFramebuffer;
         [firstInputFramebuffer lock];
+        [bufferedFramebuffers addObject:firstInputFramebuffer];
     }
     
-    [bufferedFramebuffers addObject:firstInputFramebuffer];
 
     // Need to pass along rotation information, as we're just holding on to buffered framebuffers and not rotating them ourselves
     for (id<GPUImageInput> currentTarget in targets)
@@ -94,18 +97,6 @@
         for (NSUInteger currentTextureIndex = 0; currentTextureIndex < texturesToAdd; currentTextureIndex++)
         {
             // TODO: Deal with the growth of the size of the buffer by rotating framebuffers, no textures
-        }
-    }
-    else
-    {
-        NSUInteger texturesToRemove = _bufferSize - newValue;
-        for (NSUInteger currentTextureIndex = 0; currentTextureIndex < texturesToRemove; currentTextureIndex++)
-        {
-            GPUImageFramebuffer *lastFramebuffer = [bufferedFramebuffers lastObject];
-            [bufferedFramebuffers removeObjectAtIndex:([bufferedFramebuffers count] - 1)];
-            
-            [lastFramebuffer unlock];
-            lastFramebuffer = nil;
         }
     }
 
