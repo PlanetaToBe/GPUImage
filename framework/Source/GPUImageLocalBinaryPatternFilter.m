@@ -78,22 +78,7 @@ NSString *const kGPUImageLocalBinaryPatternFragmentShaderString = SHADER_STRING
                               smoothstep(minv, maxv, bottomRightIntensity))
                         );
 
-//
-//     byteTally  = pattern[0] * smoothstep(minv, maxv, topLeftIntensity);
-//     byteTally += pattern[1] * smoothstep(minv, maxv, topIntensity);
-//     byteTally += pattern[2] * smoothstep(minv, maxv, topRightIntensity);
-//     byteTally += pattern[3] * smoothstep(minv, maxv, leftIntensity);
-//
-//     byteTally += pattern[4] * smoothstep(minv, maxv, rightIntensity);
-//     byteTally += pattern[5] * smoothstep(minv, maxv, bottomLeftIntensity);
-//     byteTally += pattern[6] * smoothstep(minv, maxv, bottomIntensity);
-//     byteTally += pattern[7] * smoothstep(minv, maxv, bottomRightIntensity);
-
      byteTally = byteTally / total;
-
-//     byteTally = step(byteTally, centerIntensity);
-
-//     byteTally = 1. - pow(byteTally, 1.618);
 
      // TODO: Replace the above with a dot product and two vec4s
      // TODO: Apply step to a matrix, rather than individually

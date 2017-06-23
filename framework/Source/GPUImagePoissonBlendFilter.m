@@ -19,7 +19,7 @@ NSString *const kGPUImagePoissonBlendFragmentShaderString = SHADER_STRING
  
  uniform sampler2D inputImageTexture;
  uniform sampler2D inputImageTexture2;
- 
+
  uniform lowp float mixturePercent;
 
  void main()
