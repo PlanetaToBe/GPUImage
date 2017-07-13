@@ -232,15 +232,20 @@
 
 - (void)recalculateViewGeometry;
 {
+    __block CGRect currentViewRect;
+    void (^setRect)() = ^{
+        currentViewRect = self.bounds;
+    };
+    if ([NSThread isMainThread]) {
+        setRect();
+    } else {
+        dispatch_sync(dispatch_get_main_queue(), setRect);
+    }
+
     runSynchronouslyOnVideoProcessingQueue(^{
         CGFloat heightScaling, widthScaling;
-        
-        CGSize currentViewSize = self.bounds.size;
-        
-        //    CGFloat imageAspectRatio = inputImageSize.width / inputImageSize.height;
-        //    CGFloat viewAspectRatio = currentViewSize.width / currentViewSize.height;
-        
-        CGRect insetRect = AVMakeRectWithAspectRatioInsideRect(inputImageSize, self.bounds);
+
+        CGRect insetRect = AVMakeRectWithAspectRatioInsideRect(inputImageSize, currentViewRect);
         
         switch(_fillMode)
         {
@@ -251,14 +256,14 @@
             }; break;
             case kGPUImageFillModePreserveAspectRatio:
             {
-                widthScaling = insetRect.size.width / currentViewSize.width;
-                heightScaling = insetRect.size.height / currentViewSize.height;
+                widthScaling = insetRect.size.width / currentViewRect.size.width;
+                heightScaling = insetRect.size.height / currentViewRect.size.height;
             }; break;
             case kGPUImageFillModePreserveAspectRatioAndFill:
             {
                 //            CGFloat widthHolder = insetRect.size.width / currentViewSize.width;
-                widthScaling = currentViewSize.height / insetRect.size.height;
-                heightScaling = currentViewSize.width / insetRect.size.width;
+                widthScaling = currentViewRect.size.height / insetRect.size.height;
+                heightScaling = currentViewRect.size.width / insetRect.size.width;
             }; break;
         }
         
